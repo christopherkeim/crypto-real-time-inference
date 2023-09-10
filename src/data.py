@@ -70,6 +70,11 @@ def download_ohlc_data_from_coinbase(
         https://api.exchange.coinbase.com/products/{product_id}/
             candles?start={start_day}&end={end_day}&granularity=3600'
     """
+    # Validation for product_ids string inputs
+    if not isinstance(product_ids, str):
+        raise TypeError(
+            "product_ids must be a string containing product ids separated by spaces."
+        )
 
     # Construct a list of days as strings
     days: pd.DatetimeIndex = pd.date_range(start=from_day, end=to_day, freq="1D")
