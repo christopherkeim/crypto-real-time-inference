@@ -39,7 +39,7 @@ lightgbm = "^4.0.0"
 bokeh = "^3.2.2"
 
 # MLOps
-comet-ml = "^3.33.10"
+wandb = "^0.15.10"
 
 
 [tool.ruff]
