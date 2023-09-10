@@ -6,7 +6,7 @@
 # Sets up all our environment variables
 ###############################################################
 
-FROM python:3.9-slim-buster as python-base
+FROM python:3.10-slim-buster as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
