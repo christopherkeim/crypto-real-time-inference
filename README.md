@@ -1,5 +1,5 @@
 [![CI](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml)
-![Python Version](https://img.shields.io/badge/python-3.9-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 
@@ -9,7 +9,7 @@ This is a template repository for Python-based Machine Learning projects.
 
 ## Quick Start 🐍 🚀 ✨
 
-1. Integrated CI pipeline for Python 3.9 and Poetry managed projects (uncomment `make test` when you're ready to have tests in dev or your pipeline)
+1. Integrated CI pipeline for Python 3.10 and Poetry managed projects (uncomment `make test` when you're ready to have tests in dev or your pipeline)
 
 2. Makefile
 
@@ -50,7 +50,7 @@ This is a template repository for Python-based Machine Learning projects.
 
 ## Getting Started
 
-This repository is a GitHub Template that you can use to create a new repository for Python-based machine learning projects. It comes pre-configured to use Python3.9 with Poetry 1.5.1 as a package manager.
+This repository is a GitHub Template that you can use to create a new repository for Python-based machine learning projects. It comes pre-configured to use Python3.10 with Poetry 1.5.1 as a package manager.
 
 To get started you can:
 
@@ -73,7 +73,7 @@ cd python-template
 bash setup.sh
 ```
 
-This will install Poetry 1.5.1 and Python3.9 into your development environment.
+This will install Poetry 1.5.1 and Python3.10 into your development environment.
 
 ## Package Management
 
@@ -81,7 +81,7 @@ This will install Poetry 1.5.1 and Python3.9 into your development environment.
 
 ```toml
 [tool.poetry.dependencies]
-python = ">=3.9, <3.9.7 || >3.9.7, <3.10"
+python = ">=3.10, <3.11"
 
 # DevOps
 black = "^22.3.0"
@@ -89,12 +89,13 @@ click = "^8.1.3"
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.285"
-boto3 = "^1.24.87"
 
 # Web
-Flask = "^2.2.2"
-Flask-Cors = "^3.0.10"
-flask-talisman = "^1.0.0"
+requests = "^2.31.0"
+flask = "^2.3.3"
+flask-cors = "^4.0.0"
+flask-talisman = "^1.1.0"
+streamlit = "^1.26.0"
 
 # Data Science
 jupyter = "^1.0.0"
@@ -103,6 +104,9 @@ numpy = "^1.23.3"
 scikit-learn = "^1.1.2"
 matplotlib = "^3.6.0"
 seaborn = "^0.12.0"
+
+# MLOps
+comet-ml = "^3.33.10"
 ```
 
 ## Package Installation
