@@ -69,6 +69,7 @@ MANIFEST
 data/
 *.parquet
 *.csv
+*.ipynb
 
 # Deployment files
 deployment_dir/
