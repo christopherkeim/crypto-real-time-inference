@@ -1,10 +1,10 @@
 #! /bin/bash
 # This script sets up a local development environment on an Ubuntu 20.04/22.04 machine
-# to work with Poetry managed Python3.9 projects. 
+# to work with Poetry managed Python3.10 projects. 
 # 
 # Targets:
 #   - Poetry 1.5.1
-#   - Python3.9
+#   - Python3.10
 #
 # Requirements:
 #   - Ubuntu 20.04/22.04
@@ -79,7 +79,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------------------------------------
-# 3) Python3.9 Install: here we'll install Python3.9 - feel free to swap this for any version you'd like.
+# 3) Python3.10 Install: here we'll install Python3.10 - feel free to swap this for any version you'd like.
 # -----------------------------------------------------------------------------------------------------------
 
 # Check if software-properties-common is in the apt-cache
@@ -110,19 +110,19 @@ else
   sudo apt update
 fi
 
-# Now you can download Python3.9
-if [ -n "$(which python3.9)" ]
+# Now you can download Python3.10
+if [ -n "$(which python3.10)" ]
 then
-  echo "Python3.9 already installed 🐍"
+  echo "Python3.10 already installed 🐍"
 else
-  echo "Installing Python3.9 🔧"
-  sudo apt install -y python3.9
+  echo "Installing Python3.10 🔧"
+  sudo apt install -y python3.10
 fi
 
-# Verify Python3.9 installation
-if [ -n "$(which python3.9)" ]
+# Verify Python3.10 installation
+if [ -n "$(which python3.10)" ]
 then
-  echo "$(python3.9 --version) 🐍 🚀 ✨"
+  echo "$(python3.10 --version) 🐍 🚀 ✨"
 else
-  echo "Python 3.9 was not installed successfully 🔴"
+  echo "Python 3.10 was not installed successfully 🔴"
 fi
