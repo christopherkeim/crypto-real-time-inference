@@ -1,6 +1,12 @@
 install:
 	poetry install
 
+data:
+	poetry run python src/data.py
+
+features:
+	poetry run python src/feature_pipeline.py -l
+
 test:
 	#poetry run pytest .
 
@@ -14,5 +20,5 @@ refactor: format lint
 
 deploy:
 	#deploy goes here
-		
+
 all: install lint test format deploy
