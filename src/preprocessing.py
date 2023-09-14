@@ -1,10 +1,24 @@
 """
-Prepocessing steps after data has been scraped.
+Prepocessing / feature engineering steps after data has been scraped.
+
+1. Transform raw time series data into (features, target) format by generating
+   lag feature over price and volume
+
+2. Calculate window features (moving average, moving std) over price and volume
+
+3. Calculate technical inidicator features
+
+Preprocessed datasets can be versioned with Weights & Biases and saved locally 
+if specified.
+
+This code can be used as a module in another script or as a CLI tool. 
 """
 
 from typing import List, Tuple, Optional, Union
 from pathlib import Path
+import os
 import click
+import wandb
 
 import pandas as pd
 from sktime.transformations.series.lag import Lag
@@ -19,16 +33,16 @@ from src.logger import get_console_logger
 logger = get_console_logger("dataset_preprocessing")
 
 
-def transform_ts_data_into_features_and_target(
+def transform_ts_data_into_lagged_features_and_target(
     path_to_input: Optional[Path] = DATA_DIR / "BTC-USD_ohlc_data.parquet",
     window_seq_len: Optional[int] = 24,
     step_size: Optional[int] = 1,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
-    Transforms the raw data from time-series format into a (features, target)
-    format that can be used to train Supervised ML models.
+    Calculates lag features and transforms raw data from time series format
+    into a (features, target) format that can be used to train supervised ML models.
     """
-    # Load the parquet file, convert raw time -> time date, sort by time,
+    # Load the parquet file, convert raw time -> date time (s), sort by time,
     # and drop duplicate time points
     ts_data = pd.read_parquet(path_to_input)
     ts_data["time"] = pd.to_datetime(ts_data["time"], unit="s")
@@ -36,8 +50,12 @@ def transform_ts_data_into_features_and_target(
     ts_data = ts_data.drop_duplicates("time", keep="first")
     ts_data.reset_index(drop=True, inplace=True)
 
-    # Define a 1 -> 24 hour lag for our x features
-    x_lag = Lag([i for i in reversed(range(1, window_seq_len + 1))])
+    # Define a 1, 2, 3, ... -> 24 hour lag sequence for our x features
+    x_time_steps: List[int] = [
+        i for i in reversed(range(1, window_seq_len + 1, step_size))
+    ]
+
+    x_lag = Lag(x_time_steps)
 
     # Create lagged columns for closing price
     x_price = ts_data[["close"]].values
@@ -50,13 +68,15 @@ def transform_ts_data_into_features_and_target(
     # Price lagged features DataFrame
     price_features = pd.DataFrame(
         x_lagged_price,
-        columns=[f"price_{i+1}_hour_ago" for i in reversed(range(window_seq_len))],
+        columns=[f"price_{i}_hour_ago" for i in x_time_steps],
     )
+
     # Volume lagged features DataFrame
     volume_features = pd.DataFrame(
         x_lagged_volume,
-        columns=[f"volume_{i+1}_hour_ago" for i in reversed(range(window_seq_len))],
+        columns=[f"volume_{i}_hour_ago" for i in x_time_steps],
     )
+
     # Full features DataFrame
     features_df = pd.concat([price_features, volume_features, ts_data], axis=1)
 
@@ -72,6 +92,8 @@ def transform_ts_data_into_features_and_target(
     # Concatenate DataFrames to drop NaN values
     full_df = pd.concat([features_df, targets_df], axis=1)
     full_df = full_df.dropna(axis=0)
+
+    # Index required by sktime for time series train-test split
     full_df["time"] = pd.PeriodIndex(full_df["time"], freq="H")
     full_df = full_df.set_index(["time"]).sort_index()
 
@@ -133,6 +155,9 @@ class RSI(BaseEstimator, TransformerMixin):
 
     New columns are:
         - 'rsi'
+
+    Thank you Pau Labarta Bajo for figuring out this implementation 🙏
+    https://github.com/Paulescu/hands-on-train-and-deploy-ml/blob/main/src/preprocessing.py
     """
 
     def __init__(self, window: int = 14):
@@ -192,21 +217,54 @@ def get_preprocessing_pipeline(pp_rsi_window: int = 14) -> Pipeline:
     type=int,
     default=24,
     show_default=True,
-    help="Number of hours to generate lag features",
+    help="Window size of hours to generate lag features over",
 )
 @click.option(
-    "--save-datasets",
+    "--step",
     "-s",
-    type=bool,
-    default=True,
+    type=int,
+    default=1,
     show_default=True,
-    help="Save datasets locally",
+    help="Step size to cut window into individual time stamps",
+)
+@click.option(
+    "--track",
+    "-t",
+    is_flag=True,
+    help="Track and version datasets with Weights & Biases",
+)
+@click.option(
+    "--save-local",
+    "-l",
+    is_flag=True,
+    help="Save datasets locally as parquet files",
 )
 def generate_full_features_and_target_datasets(
     data_file_name: Optional[str] = "BTC-USD_ohlc_data.parquet",
     window: Optional[int] = 24,
-    save_datasets: Optional[bool] = True,
-) -> None:
+    step: Optional[int] = 1,
+    track: Optional[bool] = False,
+    save_local: Optional[bool] = False,
+) -> Tuple[pd.DataFrame, pd.Series]:
+    """
+    Full workflow for preprocessing the raw crypto currency data
+    scraped from the Coinbase Exchange REST API, converting it from
+    a time series format to a features, target) format for ML by generating
+    lag features, window features, technical indicator features, and our
+    target variable.
+
+    Can be used as a module in another script or as a CLI tool.
+
+    Args:
+        data_file_name (Optional[str]): file name of scraped parquet file
+        window (Optional[int]): window size of hours to generate lag features over
+        steps (Optional[int]): step size to cut window into individual time stamps
+        track (Optional[bool]): version datasets with Weights & Biases
+        save_local (Optional[bool]): save datasets locally
+
+    Returns:
+        pd.DataFrame(X), pd.Series(target)
+    """
     # Locate data file
     logger.info(f"Locating {data_file_name}...")
     data_path: Path = DATA_DIR / data_file_name
@@ -215,11 +273,13 @@ def generate_full_features_and_target_datasets(
     else:
         logger.error("Unable to locate data file 🔴\n")
         raise FileNotFoundError
+
     # Build features and target datasets
     logger.info(f"Starting preprocessing for: {data_file_name[0:7]} 🚀\n")
-    features, target = transform_ts_data_into_features_and_target(
+    features, target = transform_ts_data_into_lagged_features_and_target(
         path_to_input=data_path,
         window_seq_len=window,
+        step_size=step,
     )
     logger.info(f"{data_file_name[0:7]} successfully split into features and target ✨")
 
@@ -245,8 +305,26 @@ def generate_full_features_and_target_datasets(
     logger.info(f"X shape: {X.shape}")
     logger.info(f"y shape: {target.shape}\n")
 
+    # Version datasets with wandb if specified
+    if track:
+        logger.info("Versioning data @ W&B backend ✨")
+        run = wandb.init(
+            project=os.environ["WANDB_PROJECT"],
+            name="post_processed_features_target_datasets",
+        )
+        X_table = wandb.Table(dataframe=X)
+        y_table = wandb.Table(dataframe=pd.DataFrame(data=target))
+        run.log(
+            {
+                f"{data_file_name[0:7]}_X_full_preprocessed_data": X_table,
+                f"{data_file_name[0:7]}_y_full_preprocessed_data": y_table,
+            }
+        )
+        wandb.finish()
+        logger.info("Datasets successfully versioned 🟢")
+
     # Save datasets locally if specified
-    if save_datasets:
+    if save_local:
         logger.info("Saving datasets locally...")
         X.to_parquet(
             DATA_DIR / f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet",

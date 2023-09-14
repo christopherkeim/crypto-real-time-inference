@@ -34,6 +34,7 @@ coverage.xml
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # pyenv
 .python-version
@@ -65,11 +66,13 @@ MANIFEST
 *.manifest
 *.spec
 
+# Experiment tracking
+wandb/
+
 # Data files
 data/
 *.parquet
 *.csv
-*.ipynb
 
 # Deployment files
 deployment_dir/
