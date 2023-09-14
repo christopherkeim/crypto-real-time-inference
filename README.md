@@ -3,140 +3,81 @@
 ![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 
-# Python Machine Learning Template
+# crypto-real-time-inference
 
-This is a template repository for Python-based Machine Learning projects.
+The aim of this application is to leverage historical Bitcoin price data and cutting-edge machine learning algorithms to serve inferences about Bitcoin's future price points within a 1 hour window, in real time.
+
+This is my first time working with time series data, and here we will work with raw time series datapoints that are served as OHLC ("open", "high", "low", "close") "candles".
+
+At a high level, I've chosen to think of a given cryptocurrency as a complex system (read: chaotic system), emergent as a phenomenon of large N interactions between groups of humans. Inherently, this is a social system.
+
+In this framework, a "candle" is a measurement of a cryptocurrency's state at a given moment in time - and by measuring state at a series of time points we can see how the system's state evolves over time. The raw dataset itself (consisting of multiple candles) is a function that maps empirically measured states to time points. At a fundamental level, the same concepts can be applied to any physical system composed of a large number of interacting variables - which means this is a very challenging problem!
+
+Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bitcoin.
+
+Disclaimer: Cryptocurrency trading involves inherent risks and is subject to market fluctuations. The code here is intended for informational purposes only and should not be considered financial advice. Always conduct thorough research and exercise caution when trading cryptocurrencies.
 
 ## Quick Start 🐍 🚀 ✨
 
-1. Integrated CI pipeline for Python 3.10 and Poetry managed projects (uncomment `make test` when you're ready to have tests in dev or your pipeline)
+### Setup
 
-2. Makefile
+**Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated setup.**
 
-3. Dockerfile
-
-4. src package
-
-5. tests package
-
-6. main.py
-
-7. pyproject.toml
-
-8. setup.sh
-
-9. user-story.md Issue Template (for story-driven development)
-
-## Repository Structure
-
-```
-├── .github
-│     |── ISSUE_TEMPLATE
-│     |      └── user-story.md
-│     └── workflows
-│            └── cicd.yaml
-├── src
-│    └── __init__.py
-|── tests
-|     └── __init__.py
-|── .gitignore
-├── Dockerfile
-├── Makefile
-├── README.md
-├── main.py
-├── pyproject.toml
-└── setup.sh
-```
-
-## Getting Started
-
-This repository is a GitHub Template that you can use to create a new repository for Python-based machine learning projects. It comes pre-configured to use Python3.10 with Poetry 1.5.1 as a package manager.
-
-To get started you can:
-
-1. Click the `Use this template` button at the top right of the page. This will let you create a new repository set up with all of the resources in this template.
-
-2. You can also directly clone this repository:
+1. You can clone this repository onto a machine with:
 
 ```bash
-git clone https://github.com/christopherkeim/python-template.git
+git clone https://github.com/christopherkeim/crypto-real-time-inference.git
 ```
 
-## Setup
-
-**Note: for the moment I've targeted Ubuntu 20.04/22.04 development environments for automated setup.**
-
-1. Once you have local copy of this repository in your development environment, navigate into this directory and run the `setup.sh` script:
+2. Once you have local copy of this repository, navigate into this directory and run the `setup.sh` script:
 
 ```bash
-cd python-template
+cd crypto-real-time-inference
 bash setup.sh
 ```
 
-This will install Poetry 1.5.1 and Python3.10 into your development environment.
+This will install Poetry 1.5.1 and Python3.10 into your environment.
 
-## Package Management
+### Dependency Installation
 
-2. You can configure any dependencies you'd like using the `pyproject.toml` file:
-
-```toml
-[tool.poetry.dependencies]
-python = ">=3.10, <3.11"
-
-# DevOps
-black = "^22.3.0"
-click = "^8.1.3"
-pytest = "^7.4.0"
-pytest-cov = "^4.1.0"
-ruff = "^0.0.285"
-
-# Web
-requests = "^2.31.0"
-flask = "^2.3.3"
-flask-cors = "^4.0.0"
-flask-talisman = "^1.1.0"
-streamlit = "^1.26.0"
-
-# Data Science
-jupyter = "^1.0.0"
-pandas = "^1.5.0"
-numpy = "^1.23.3"
-scikit-learn = "^1.1.2"
-matplotlib = "^3.6.0"
-seaborn = "^0.12.0"
-
-# MLOps
-comet-ml = "^3.33.10"
-```
-
-## Package Installation
-
-3. Once you're happy with your defined dependencies, you can run `make install` (or `poetry install` directly) to install the Python dependencies for your project into a virtual environment (pre-configured to be placed in your project's directory):
+3. To install the Python dependencies for this application, run:
 
 ```bash
 make install
 ```
 
-4. This will create a `poetry.lock` file defining exactly what dependencies you're using in development and testing. It's recommended that you check this file into version control so others can recreate this on their machines 💻 and in production 🚀.
+### Data
 
-## Fire Up Some Code!
+4. To download Bitcoin candles using default parameters (from September 2020 - September 2023) run:
 
-5. You're all set to start developing 🐍 🚀 ✨.
+```bash
+make data
+```
 
-## Continuous Integration
+### Feature Engineering
 
-You'll want to edit the `README.md` and replace the CI badge with a hook for your specific repository's GitHub Actions CI workflow.
+5. To build supervised-machine-learning-ready datasets from this raw data, run:
 
-## Continuous Delivery
+```bash
+make features
+```
 
-You can also add a deploy target by editing your `Makefile` or the `cicd.yaml` GitHub Actions workflow file.
+### More to come (see below)
 
-## Why Poetry?
+## In Progress 🔧💻
 
-As I'm learning more about DevOps and the joys of dependency management in Python projects, I've noticed that Software Engineering and MLOps minded folks tend to like Poetry. There's a few reasons I think Poetry is a solid choice for setting your code up to survive across different environments at the level of dependency management:
+- [x] Continuous Integration (CI)
 
-1. It allows you to express what primary dependencies you believe your application will work with using the `pyproject.toml` file, and allow for upgrade paths down the road
+- [x] Minimum viable data extraction web scraper (CLI tool)
 
-2. Unlike `pip`, the `poetry.lock` file lets you define exactly what dependencies you're using in development and testing. This means your Python dependency structure can be exactly replicated on other machines, every time.
+- [x] Minimum viable feature engineering pipeline
 
-3. Poetry has very convenient virtual environment management (which we've configured here to be placed within your project directory)
+- [x] Experiment tracking (Weight & Biases)
+
+- [ ] Training pipeline
+
+- [ ] Inference pipeline (REST API)
+
+- [ ] Frontend
+
+- [ ] Continuous deployment

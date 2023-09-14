@@ -36,7 +36,7 @@ logger = get_console_logger(name="dataset_generation")
     "--from-day",
     "-f",
     type=str,
-    default="2022-09-01",
+    default="2020-09-01",
     show_default=True,
     help="Start 'YEAR-MONTH-DAY'",
 )
@@ -50,7 +50,7 @@ logger = get_console_logger(name="dataset_generation")
 )
 def download_ohlc_data_from_coinbase(
     product_ids: Optional[str] = "BTC-USD",
-    from_day: Optional[str] = "2022-09-01",
+    from_day: Optional[str] = "2020-09-01",
     to_day: Optional[str] = "2023-09-01",
 ) -> None:
     """
