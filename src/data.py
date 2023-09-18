@@ -1,5 +1,5 @@
 """
-This is a minimum viable web scraber CLI tool that takes utilizes the
+This is a minimum viable web scraber CLI tool that utilizes the
 Coinbase Exchange REST API to download candles for a given time
 window (i.e. 3 years) at a given time resolution (i.e. 1 hour).
 
@@ -9,7 +9,7 @@ https://api.exchange.coinbase.com/products/{product_id}/
     candles?start={start_day}&end={end_day}&granularity=3600'
 """
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime, timedelta
 import time
 import requests
@@ -86,7 +86,7 @@ def download_ohlc_data_from_coinbase(
     # START TIME
     start_time: float = time.time()
 
-    meta_data: dict[str, tuple[int, int]] = {}
+    meta_data: Dict[str, tuple[int, int]] = {}
 
     product_ids: List[str] = product_ids.split()
 
