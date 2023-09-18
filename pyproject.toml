@@ -40,6 +40,8 @@ bokeh = "^3.2.2"
 
 # MLOps
 wandb = "^0.15.10"
+tensorflow = "^2.13.0"
+keras = "^2.14.0"
 
 
 [tool.ruff]

@@ -2,7 +2,7 @@
 Prepocessing / feature engineering steps after data has been scraped.
 
 1. Transform raw time series data into (features, target) format by generating
-   lag feature over price and volume
+   lag features over price and volume
 
 2. Calculate window features (moving average, moving std) over price and volume
 
@@ -20,6 +20,7 @@ import os
 import click
 import wandb
 
+import numpy as np
 import pandas as pd
 from sktime.transformations.series.lag import Lag
 import ta
@@ -42,9 +43,11 @@ def transform_ts_data_into_lagged_features_and_target(
     Calculates lag features and transforms raw data from time series format
     into a (features, target) format that can be used to train supervised ML models.
     """
-    # Load the parquet file, convert raw time -> date time (s), sort by time,
-    # and drop duplicate time points
+    # Load the parquet file
     ts_data = pd.read_parquet(path_to_input)
+    # Calculate hour (sin) and day (sin, cos) time features
+    ts_data = _get_time_signal_features(ts_data)
+    # Convert seconds -> date time, sort by time, and drop duplicate time points
     ts_data["time"] = pd.to_datetime(ts_data["time"], unit="s")
     ts_data.sort_values(by=["time"], inplace=True)
     ts_data = ts_data.drop_duplicates("time", keep="first")
@@ -93,8 +96,7 @@ def transform_ts_data_into_lagged_features_and_target(
     full_df = pd.concat([features_df, targets_df], axis=1)
     full_df = full_df.dropna(axis=0)
 
-    # Index required by sktime for time series train-test split
-    full_df["time"] = pd.PeriodIndex(full_df["time"], freq="H")
+    # Set time as index
     full_df = full_df.set_index(["time"]).sort_index()
 
     # Now extract our features and targets
@@ -102,6 +104,21 @@ def transform_ts_data_into_lagged_features_and_target(
     targets = full_df["target_price_next_hour"]
 
     return features, targets
+
+
+def _get_time_signal_features(X: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates 3 new time signal features ("sin_hour", "sin_day"
+    "cos_day") and adds these columns to our DataFrame.
+    """
+    NUMBER_OF_SECONDS_IN_HOUR = 60 * 60
+    NUMBER_OF_SECONDS_IN_DAY = 60 * 60 * 24
+    # Hour sin signal
+    X["sin_hour"] = np.sin(X["time"] * (2 * np.pi / NUMBER_OF_SECONDS_IN_HOUR))
+    # Day sin and cosine signals
+    X["sin_day"] = np.sin(X["time"] * (2 * np.pi / NUMBER_OF_SECONDS_IN_DAY))
+    X["cos_day"] = np.cos(X["time"] * (2 * np.pi / NUMBER_OF_SECONDS_IN_DAY))
+    return X
 
 
 def _get_price_columns(X: pd.DataFrame) -> List[str]:
@@ -116,6 +133,16 @@ def _get_volume_columns(X: pd.DataFrame) -> List[str]:
     Get the columns of the input DataFrame that contain the volume data.
     """
     return [col for col in X.columns if "volume" in col]
+
+
+def _get_polynomial_features(X: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates 2 new polynomial features ("upper_shadow", "lower_shadow")
+    and adds these to our DataFrame.
+    """
+    X["upper_shadow"] = X["high"] - np.maximum(X["close"], X["open"])
+    X["lower_shadow"] = np.minimum(X["close"], X["open"]) - X["low"]
+    return X
 
 
 def _get_price_rolling_statistics(X: pd.DataFrame) -> pd.DataFrame:
@@ -188,14 +215,19 @@ class RSI(BaseEstimator, TransformerMixin):
         return X
 
 
-def get_preprocessing_pipeline(pp_rsi_window: int = 14) -> Pipeline:
+def get_feature_engineering_pipeline(pp_rsi_window: int = 14) -> Pipeline:
     """Returns the preprocessing pipeline."""
     return make_pipeline(
+        # Polynomial features (upper and lower shadows)
+        FunctionTransformer(_get_polynomial_features),
         # Windows (moving average, std)
         FunctionTransformer(_get_price_rolling_statistics),
         FunctionTransformer(_get_volume_rolling_statistics),
         # Trends
         FunctionTransformer(_get_price_percentage_return, kw_args={"hours": 2}),
+        FunctionTransformer(_get_price_percentage_return, kw_args={"hours": 3}),
+        FunctionTransformer(_get_price_percentage_return, kw_args={"hours": 4}),
+        FunctionTransformer(_get_price_percentage_return, kw_args={"hours": 12}),
         FunctionTransformer(_get_price_percentage_return, kw_args={"hours": 24}),
         # Momentum
         RSI(pp_rsi_window),
@@ -233,23 +265,16 @@ def get_preprocessing_pipeline(pp_rsi_window: int = 14) -> Pipeline:
     is_flag=True,
     help="Track and version datasets with Weights & Biases",
 )
-@click.option(
-    "--save-local",
-    "-l",
-    is_flag=True,
-    help="Save datasets locally as parquet files",
-)
 def generate_full_features_and_target_datasets(
     data_file_name: Optional[str] = "BTC-USD_ohlc_data.parquet",
     window: Optional[int] = 24,
     step: Optional[int] = 1,
     track: Optional[bool] = False,
-    save_local: Optional[bool] = False,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Full workflow for preprocessing the raw crypto currency data
     scraped from the Coinbase Exchange REST API, converting it from
-    a time series format to a features, target) format for ML by generating
+    a time series format to a (features, target) format for ML by generating
     lag features, window features, technical indicator features, and our
     target variable.
 
@@ -284,16 +309,16 @@ def generate_full_features_and_target_datasets(
     logger.info(f"{data_file_name[0:7]} successfully split into features and target ✨")
 
     # Build preprocessing pipeline
-    logger.info(f"Building preprocessing pipeline for {data_file_name[0:7]} 🔧\n")
-    preprocessing_pipeline = get_preprocessing_pipeline()
+    logger.info(f"Building feature engineering pipeline for {data_file_name[0:7]} 🔧\n")
+    feature_engineering_pipeline = get_feature_engineering_pipeline()
 
     # Fit preprocessing pipeline
-    logger.info("Fitting preprocessing pipeline... 👕\n")
-    preprocessing_pipeline.fit(features)
+    logger.info("Fitting feature engineering pipeline... 👕\n")
+    feature_engineering_pipeline.fit(features)
 
     # Transform X data
     logger.info("Transforming data ... 🐛 -> 🦋\n")
-    X = preprocessing_pipeline.transform(features)
+    X = feature_engineering_pipeline.transform(features)
 
     logger.info(f"{'⭐'*10} Successfully generated X and y datasets {'⭐'*10}\n")
     logger.info("Features: \n")
@@ -304,6 +329,18 @@ def generate_full_features_and_target_datasets(
     logger.info(f"{target.info()}\n")
     logger.info(f"X shape: {X.shape}")
     logger.info(f"y shape: {target.shape}\n")
+
+    # Save datasets locally
+    logger.info("Saving datasets locally...")
+    X.to_parquet(
+        DATA_DIR / f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet",
+        index=True,
+    )
+    pd.DataFrame(data=target).to_parquet(
+        DATA_DIR / f"{data_file_name[0:7]}_y_full_preprocessed_data.parquet",
+        index=True,
+    )
+    logger.info("Datasets saved 🟢")
 
     # Version datasets with wandb if specified
     if track:
@@ -322,19 +359,6 @@ def generate_full_features_and_target_datasets(
         )
         wandb.finish()
         logger.info("Datasets successfully versioned 🟢")
-
-    # Save datasets locally if specified
-    if save_local:
-        logger.info("Saving datasets locally...")
-        X.to_parquet(
-            DATA_DIR / f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet",
-            index=True,
-        )
-        pd.DataFrame(data=target).to_parquet(
-            DATA_DIR / f"{data_file_name[0:7]}_y_full_preprocessed_data.parquet",
-            index=True,
-        )
-        logger.info("Datasets saved 🟢")
 
     # Return the fully preprocessed features and target dataset
     return X, target

@@ -75,6 +75,7 @@ data/
 *.csv
 
 # Deployment files
+models/
 deployment_dir/
 *.pkl
 set_environment_variables.sh

@@ -4,7 +4,6 @@
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 ![W&B](https://img.shields.io/badge/Experiment%20Tracking-W%26B-yellow?labelColor=black&color=yellow)
 
-
 # crypto-real-time-inference
 
 The aim of this application is to leverage historical Bitcoin price data and cutting-edge machine learning algorithms to serve inferences about Bitcoin's future price points within a 1 hour window, in real time.
@@ -17,7 +16,9 @@ In this framework, a "candle" is a measurement of a cryptocurrency's state at a 
 
 Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bitcoin.
 
-> Disclaimer: Cryptocurrency trading involves inherent risks and is subject to market fluctuations. The code here is intended for informational purposes only and should not be considered financial advice. Always conduct thorough research and exercise caution when trading cryptocurrencies.
+## Disclaimer
+
+**Cryptocurrency trading involves inherent risks and is subject to market fluctuations. The code here is intended for informational purposes only and should not be considered financial advice. Always conduct thorough research and exercise caution when trading cryptocurrencies.**
 
 ## Quick Start 🐍 🚀 ✨
 
