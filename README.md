@@ -54,7 +54,7 @@ make install
 4. To download Bitcoin candles using default parameters (from September 2020 - September 2023) run:
 
 ```bash
-make data
+make rdata
 ```
 
 ### Feature Engineering
@@ -65,21 +65,37 @@ make data
 make features
 ```
 
+### Machine Learning Training
+
+6. To build a Lasso Regressor model (primary recommendation) using default parameters, run:
+
+```bash
+make train
+```
+
+### Deep Learning Training
+
+7. To build a Convolutional Neural Network (primary recommendation) using default parameters, run:
+
+```bash
+make nntrain
+```
+
 ### More to come (see below)
 
 ## In Progress 🔧💻
 
 - [x] Continuous Integration (CI)
 
-- [x] Minimum viable data extraction web scraper (CLI tool)
+- [x] Minimum viable Data Extraction Web Scraper (CLI tool)
 
-- [x] Minimum viable feature engineering pipeline
+- [x] Minimum viable Feature Engineering Pipeline
 
 - [x] Experiment tracking (Weight & Biases)
 
-- [ ] Training pipeline
+- [x] Minimum viable Training Pipelines (ML & DL)
 
-- [ ] Inference pipeline (REST API)
+- [ ] Inference Pipeline (REST API)
 
 - [ ] Frontend
 
