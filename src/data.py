@@ -9,7 +9,7 @@ https://api.exchange.coinbase.com/products/{product_id}/
     candles?start={start_day}&end={end_day}&granularity=3600'
 """
 
-from typing import Optional, List, Dict
+from typing import List, Dict
 from datetime import datetime, timedelta
 import time
 import requests
@@ -44,14 +44,14 @@ logger = get_console_logger(name="dataset_generation")
     "--to-day",
     "-t",
     type=str,
-    default="2023-09-01",
+    default="now",
     show_default=True,
     help="End 'YEAR-MONTH-DAY'",
 )
 def download_ohlc_data_from_coinbase(
-    product_ids: Optional[str] = "BTC-USD",
-    from_day: Optional[str] = "2020-09-01",
-    to_day: Optional[str] = "2023-09-01",
+    product_ids: str = "BTC-USD",
+    from_day: str = "2020-09-01",
+    to_day: str = "now",
 ) -> None:
     """
     This function downloads historical candles (Open, High, Low, Close, Volume)
@@ -59,9 +59,9 @@ def download_ohlc_data_from_coinbase(
     a parquet file.
 
     Args:
-        product_id (Optional[str]): product_ids of the target currencies
-        from_day (Optional[str]): start day in Year-Month-Day
-        to_day (Optional[str]): end day in Year-Month-Day
+        product_id (str): product_ids of the target currencies
+        from_day (str): start day in Year-Month-Day
+        to_day (str): "now" or end day in Year-Month-Day
 
     Returns:
         None
@@ -75,6 +75,10 @@ def download_ohlc_data_from_coinbase(
         raise TypeError(
             "product_ids must be a string containing product ids separated by spaces."
         )
+
+    # Extract the current day as a date time if "now"
+    if to_day == "now":
+        to_day = datetime.now().strftime("%Y-%m-%d")
 
     # Construct a list of days as strings
     days: pd.DatetimeIndex = pd.date_range(start=from_day, end=to_day, freq="1D")
@@ -153,7 +157,7 @@ def _download_data_for_one_day(product_id: str, day: str) -> pd.DataFrame:
     r: requests.models.Response = requests.get(URL)
     data: List[List[int, float, float, float, float, float]] = r.json()
 
-    # transform list of lists to pandas dataframe and return
+    # Transform list of lists to pandas dataframe and return
     return pd.DataFrame(
         data, columns=["time", "low", "high", "open", "close", "volume"]
     )
