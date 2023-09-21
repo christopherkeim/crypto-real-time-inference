@@ -15,7 +15,7 @@ parameters for these models are optimal. However, I will keep this in for future
 projects.
 """
 
-from typing import Dict, Tuple, List, Optional, Callable
+from typing import Dict, Tuple, List, Callable
 from pathlib import Path
 import os
 import pickle
@@ -52,12 +52,29 @@ def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
     """
     Standardizes features by removing the mean and scaling to unit variance.
     """
+    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
-    # Instantiate the scaler
-    scaler: StandardScaler = StandardScaler()
+
+    # Load the scaler from disk if it exists
+    if SCALER_PATH.exists():
+        logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
+        with open(SCALER_PATH, mode="rb") as f:
+            scaler: StandardScaler = pickle.load(f)
+
+    # Fit a scaler to this data
+    else:
+        logger.info("Fitting scaler model to X ... 🪅\n")
+        scaler: StandardScaler = StandardScaler()
+        scaler.fit(X)
+        logger.info("Scaler model successfully fit 🟢\n")
+
     # Transform the feature dataset
-    X_scaled: np.ndarray = scaler.fit_transform(X)
+    logger.info("Transforming X features ... 🎭\n")
+    X_scaled: np.ndarray = scaler.transform(X)
+    logger.info("X successfully scaled 🟢\n")
+
     # Construct a DataFrame with the same columns as input
     X = pd.DataFrame(X_scaled, columns=column_order)
 
@@ -102,16 +119,13 @@ def find_best_hyperparameters(
     Performs Grid Search Cross-Validation on a given model.
     """
     from sklearn.model_selection import GridSearchCV
+    from hyperparam_config import LASSO_CV_CONFIG, LGBM_CV_CONFIG
 
     if model_name == "lasso":
-        params = {"alpha": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]}
+        params = LASSO_CV_CONFIG
 
     elif model_name == "lgbm":
-        params = {
-            "n_estimators": [50, 100, 150, 200],
-            "num_leaves": [10, 20, 31, 40, 50],
-            "max_depth": [-1, 2, 4, 8, 10],
-        }
+        params = LGBM_CV_CONFIG
 
     grid_search_cv = GridSearchCV(
         estimator=model(),
@@ -127,9 +141,7 @@ def find_best_hyperparameters(
     return best_params
 
 
-def evaluate(
-    model: Callable, X_set: pd.DataFrame, y_set: pd.Series
-) -> Tuple[float, float]:
+def evaluate(model: Callable, X_set: pd.DataFrame, y_set: pd.Series) -> float:
     """
     Evaluates a given model and returns its Mean Absolute Error.
     """
@@ -193,13 +205,23 @@ def _create_wandb_predictions_table(
 def train(
     X: pd.DataFrame,
     y: pd.Series,
-    model_name: Optional[str] = "lasso",
-    tune_hyperparameters: Optional[bool] = False,
-    track: Optional[bool] = False,
+    model_name: str = "lasso",
+    tune_hyperparameters: bool = False,
+    track: bool = False,
 ) -> None:
     """
     Trains a model, tunes hyperparameters if specified, saves model artifact
     to disk, and versions it in model registry if specified.
+
+    Args:
+        X (pd.DataFrame): Features dataset
+        y (pd.Series): target dataset
+        model_name (str): Name of the model you want to train
+        tune_hyperparams (bool): Tune model hyperparameters
+        track (bool): Version model in W&B
+
+    Returns:
+        None
     """
 
     # Split our datasets into X_train, y_train, X_val, y_val, X_test, y_test
@@ -209,26 +231,28 @@ def train(
     )
 
     # Convert the model name string -> model constructor (Callable)
-    model: Callable = get_model_constructor_from_name(model_name)
+    model_constructor: Callable = get_model_constructor_from_name(model_name)
 
     # Hyperparameter optimization
     if tune_hyperparameters:
         # Run grid search optimization to find the best hyperparameters
         logger.info(f"Optimizing parameters for {model_name} 🕒\n")
-        best_params = find_best_hyperparameters(model_name, model, X_train, y_train)
+        best_params = find_best_hyperparameters(
+            model_name, model_constructor, X_train, y_train
+        )
 
         logger.info(f"Optimized paramters for {model_name} found: ")
         logger.info(f"{best_params}\n")
 
         # Instantiate the model with the optimized hyperparameters
-        model = model(**best_params)
+        model = model_constructor(**best_params)
         model_is_best: bool = True
         config = best_params
 
     # Default hyperparameters
     else:
         logger.info("Using default parameters 🔧\n")
-        model = model()
+        model = model_constructor()
         model_is_best: bool = False
         config = {"default": True}
 
@@ -334,7 +358,7 @@ def train(
     "--tune-hyperparams",
     "-h",
     is_flag=True,
-    help="Tune model hyperparamters (computationally expensive)",
+    help="Tune model hyperparameters (computationally expensive)",
 )
 @click.option(
     "--track",
@@ -343,34 +367,43 @@ def train(
     help="Version model in W&B",
 )
 def training_pipeline(
-    model_name: Optional[str] = "lasso",
-    product_id: Optional[str] = "BTC-USD",
-    tune_hyperparams: Optional[bool] = False,
-    track: Optional[bool] = False,
+    model_name: str = "lasso",
+    product_id: str = "BTC-USD",
+    tune_hyperparams: bool = False,
+    track: bool = False,
 ) -> None:
     """
     The full model training pipeline.
+
+    Args:
+        model_name (str): Name of the model you want to train
+        product_id (str): Name product data
+        tune_hyperparams (bool): Tune model hyperparameters
+        track (bool): Version model in W&B
+
+    Returns:
+        None
     """
     # Load the preprocessed X and y datasets into memory
     X_PATH: Path = DATA_DIR / f"{product_id}_X_full_preprocessed_data.parquet"
     Y_PATH: Path = DATA_DIR / f"{product_id}_y_full_preprocessed_data.parquet"
 
-    if X_PATH.exists():
-        logger.info(f"{product_id} preprocessed X data found at: {X_PATH} 🟢\n")
-        X: pd.DataFrame = pd.read_parquet(X_PATH)
-    else:
+    if not X_PATH.exists():
         logger.error("Unable to locate X data file 🔴\n")
         raise FileNotFoundError
 
-    if Y_PATH.exists():
-        logger.info(f"{product_id} preprocessed y data found at: {Y_PATH} 🟢\n")
-        y: pd.Series = pd.read_parquet(Y_PATH)["target_price_next_hour"]
-    else:
+    if not Y_PATH.exists():
         logger.error("Unable to locate y data file 🔴\n")
         raise FileNotFoundError
 
+    logger.info(f"{product_id} preprocessed X data found at: {X_PATH} 🟢\n")
+    X: pd.DataFrame = pd.read_parquet(X_PATH)
+
+    logger.info(f"{product_id} preprocessed y data found at: {Y_PATH} 🟢\n")
+    y: pd.Series = pd.read_parquet(Y_PATH)["target_price_next_hour"]
+
     # Scale our X dataset
-    logger.info("Scaling X features ...\n")
+    logger.info("Scaling X features ... 👉 👈\n")
     X: pd.DataFrame = generate_scaled_features(X)
 
     # Train the model
