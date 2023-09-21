@@ -25,7 +25,9 @@ ENV PYTHONUNBUFFERED=1 \
     # Non-interactive for automation
     POETRY_NO_INTERACTION=1 \
     # Force Poetry to install at this location
-    POETRY_HOME="/opt/poetry" 
+    POETRY_HOME="/opt/poetry" \
+    # Append project's directory to PYTHONPATH (allows module imports)
+    PYTHONPATH="${PYTHONPATH}:/app/src"
 
 # Prepend Poetry to path
 ENV PATH="$POETRY_HOME/bin:$PATH"
@@ -48,12 +50,16 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
+# Create a directory app/src/
+WORKDIR /app/
+
 # Copy project pyproject.toml and poetry.lock here to ensure they'll be cached.
-COPY . .
+COPY ./pyproject.toml .
+COPY ./poetry.lock .
 
 # Install runtime dependencies with Poetry - uses $POETRY_VIRTUALENVS_IN_PROJECT and
 # $POETRY_NO_INTERACTION 
-RUN poetry install
+RUN poetry install --no-root
 
 
 ###############################################################
@@ -62,12 +68,18 @@ RUN poetry install
 ###############################################################
 FROM builder-base as development
 
-#Flask ENVs
+# Project files
+COPY ./src/__init__.py /app/src/
+COPY ./src/feature_pipeline.py /app/src/
+COPY ./src/logger.py /app/src/
+COPY ./src/paths.py /app/src/
+COPY ./src/nn_inference.py /app/src/
+COPY ./models /app/models/
 
-WORKDIR /src
+WORKDIR /app/
 
-EXPOSE 5000
-CMD ["poetry", "run", "ml_server.py"]
+EXPOSE 8000
 
-#Non-root user
-ARG USER="mlspace"
+CMD ["poetry", "run", "python", "src/nn_inference.py"]
+
+# docker build -t nn_inference:v0 .
