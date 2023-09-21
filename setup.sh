@@ -126,3 +126,70 @@ then
 else
   echo "Python 3.10 was not installed successfully 🔴"
 fi
+
+# -----------------------------------------------------------------------------------------------------------
+# 4) Docker Install: here we'll install Docker
+# -----------------------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------
+# 4.1) Set up the repository: Before you install Docker Engine for the first time on a new host machine, 
+# you need to set up the Docker repository. Afterward, you can install and update Docker from the repository.
+# -----------------------------------------------------------------------------------------------------------
+
+# Add Docker’s official GPG key
+if [ -f /etc/apt/keyrings/docker.gpg ]
+then
+  echo 'Docker GPG Key already installed at /etc/apt/keyrings/docker.gpg 🟢'
+else
+  echo 'Installing Docker GPG Key at /etc/apt/keyrings/docker.gpg 🔧'
+  
+  # Update the apt package index and install packages to allow apt to use a repository over HTTPS
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl gnupg
+  
+  # Create the /etc/apt/keyrings directory with appropriate permissions
+  sudo install -m 0755 -d /etc/apt/keyrings
+  
+  # Download the GPG key from Docker
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo chmod a+r /etc/apt/keyrings/docker.gpg
+fi
+
+# Set up the repository
+if [ -f /etc/apt/sources.list.d/docker.list ] 
+then
+  echo 'docker.list repository already exists at /etc/apt/sources.list.d/docker.list 🟢'
+else
+  echo 'Installing docker.list repository at /etc/apt/sources.list.d/docker.list 🔧'
+  echo \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+fi
+
+# -----------------------------------------------------------------------------------------------------------
+# 4.2) Install Docker Engine
+# -----------------------------------------------------------------------------------------------------------
+
+# Check if docker-ce is in the apt-cache
+if ( apt-cache show docker-ce > /dev/null )
+then
+  echo "docker-ce is already cached 🟢"
+else
+  sudo apt update
+fi
+
+# Install Docker Engine, containerd, and Docker Compose
+if [ "$(docker --version)" ]
+then
+  echo "Docker is already installed 🟢"
+  echo "Using $(docker --version)"
+else
+  echo "Installing Docker 🐳"
+
+  # Installs
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  
+  # Verify that the Docker Engine installation is successful by running the hello-world image
+  sudo docker run hello-world
+fi
