@@ -1,7 +1,7 @@
 install:
 	poetry install
 
-rdata:
+rawdata:
 	poetry run python src/data.py
 
 features:
@@ -12,6 +12,12 @@ train:
 
 nntrain:
 	poetry run python src/nn_train.py
+
+predict:
+	poetry run python src/ml_inference.py
+
+nnpredict:
+	poetry run python src/nn_inference.py
 
 test:
 	#poetry run pytest .

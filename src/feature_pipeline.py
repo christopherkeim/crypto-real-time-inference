@@ -17,6 +17,7 @@ This code can be used as a module in another script or as a CLI tool.
 from typing import List, Tuple, Optional, Union
 from pathlib import Path
 import os
+import pickle
 import click
 import wandb
 
@@ -27,17 +28,18 @@ import ta
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import FunctionTransformer
+from sklearn.preprocessing import StandardScaler
 
-from src.paths import DATA_DIR
+from src.paths import DATA_DIR, MODELS_DIR
 from src.logger import get_console_logger
 
 logger = get_console_logger("dataset_preprocessing")
 
 
 def transform_ts_data_into_lagged_features_and_target(
-    path_to_input: Optional[Path] = DATA_DIR / "BTC-USD_ohlc_data.parquet",
-    window_seq_len: Optional[int] = 24,
-    step_size: Optional[int] = 1,
+    path_to_input: Path = DATA_DIR / "BTC-USD_ohlc_data.parquet",
+    window_seq_len: int = 24,
+    step_size: int = 1,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Calculates lag features and transforms raw data from time series format
@@ -234,6 +236,85 @@ def get_feature_engineering_pipeline(pp_rsi_window: int = 14) -> Pipeline:
     )
 
 
+def build_and_save_X_scaler_model(X: pd.DataFrame) -> None:
+    """
+    Fits a StandardScaler model to the fully engineered features
+    dataset and saves it to disk for future use.
+    """
+    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+
+    # Fit the scaler to this data
+    scaler: StandardScaler = StandardScaler()
+
+    logger.info("Fitting scaler model to X ... 🪅\n")
+    scaler.fit(X)
+    logger.info("Scaler model successfully fit 🟢\n")
+
+    # Save fit scaler model to disk
+    logger.info(f"Saving X_scaler to {SCALER_PATH}\n")
+    with open(SCALER_PATH, "wb") as f:
+        pickle.dump(scaler, f)
+    logger.info("X_scaler model successfully saved 🟢\n")
+
+
+def version_artifacts_with_wandb(
+    data_file_name: str,
+    X: pd.DataFrame,
+    target: pd.Series,
+) -> None:
+    """
+    Versions artifacts from feature pipeline to W&B backend.
+
+    Tracks:
+      - features and target dataset parquet files
+      - features and target dataset tables for visualization
+      - X_scaler model to model registry
+    """
+    logger.info("Versioning data @ W&B backend ✨")
+    run = wandb.init(
+        project=os.environ["WANDB_PROJECT"],
+        name="pre_processed_features_target_datasets",
+    )
+
+    # Upload the X dataset parquet file
+    X_artifact = wandb.Artifact(
+        f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet", type="dataset"
+    )
+    X_artifact.add_file(
+        DATA_DIR / f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet",
+        f"{data_file_name[0:7]}_X_full_preprocessed_data.parquet",
+    )
+    run.log_artifact(X_artifact, aliases=["latest"])
+
+    # Upload the y dataset parquet file
+    y_artifact = wandb.Artifact(
+        f"{data_file_name[0:7]}_y_full_preprocessed_data.parquet", type="dataset"
+    )
+    y_artifact.add_file(
+        DATA_DIR / f"{data_file_name[0:7]}_y_full_preprocessed_data.parquet",
+        f"{data_file_name[0:7]}_y_full_preprocessed_data.parquet",
+    )
+    run.log_artifact(y_artifact, aliases=["latest"])
+
+    # Create X and y dataset tables for visualization
+    X_table = wandb.Table(dataframe=X)
+    y_table = wandb.Table(dataframe=pd.DataFrame(data=target))
+    run.log(
+        {
+            f"{data_file_name[0:7]}_X_full_preprocessed_data": X_table,
+            f"{data_file_name[0:7]}_y_full_preprocessed_data": y_table,
+        }
+    )
+
+    # Upload X_scaler model
+    scaler_artifact = wandb.Artifact("X_scaler_model", type="model")
+    scaler_artifact.add_file(MODELS_DIR / "X_scaler_model.pkl", "X_scaler_model.pkl")
+    run.log_artifact(scaler_artifact, aliases=["latest"])
+
+    wandb.finish()
+    logger.info("Datasets and X_scaler model successfully versioned 🟢")
+
+
 @click.command()
 @click.option(
     "--data-file-name",
@@ -260,16 +341,25 @@ def get_feature_engineering_pipeline(pp_rsi_window: int = 14) -> Pipeline:
     help="Step size to cut window into individual time stamps",
 )
 @click.option(
+    "--build-scaler",
+    "-b",
+    type=bool,
+    default=True,
+    show_default=True,
+    help="Fit scaler to X features and save to disk",
+)
+@click.option(
     "--track",
     "-t",
     is_flag=True,
     help="Track and version datasets with Weights & Biases",
 )
 def generate_full_features_and_target_datasets(
-    data_file_name: Optional[str] = "BTC-USD_ohlc_data.parquet",
-    window: Optional[int] = 24,
-    step: Optional[int] = 1,
-    track: Optional[bool] = False,
+    data_file_name: str = "BTC-USD_ohlc_data.parquet",
+    window: int = 24,
+    step: int = 1,
+    build_scaler: bool = True,
+    track: bool = False,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Full workflow for preprocessing the raw crypto currency data
@@ -281,20 +371,21 @@ def generate_full_features_and_target_datasets(
     Can be used as a module in another script or as a CLI tool.
 
     Args:
-        data_file_name (Optional[str]): file name of scraped parquet file
-        window (Optional[int]): window size of hours to generate lag features over
-        steps (Optional[int]): step size to cut window into individual time stamps
-        track (Optional[bool]): version datasets with Weights & Biases
-        save_local (Optional[bool]): save datasets locally
+        data_file_name (str): File name of scraped parquet file
+        window (int): Window size of hours to generate lag features over
+        steps (int): Step size to cut window into individual time stamps
+        build_scaler (bool): Fit scaler to X features and save to disk
+        track (bool): Version datasets with Weights & Biases
 
     Returns:
         pd.DataFrame(X), pd.Series(target)
     """
     # Locate data file
     logger.info(f"Locating {data_file_name}...")
-    data_path: Path = DATA_DIR / data_file_name
-    if data_path.exists():
-        logger.info(f"{data_file_name[0:7]} found at: {data_path} 🟢\n")
+    DATA_FILE_PATH: Path = DATA_DIR / data_file_name
+
+    if DATA_FILE_PATH.exists():
+        logger.info(f"{data_file_name[0:7]} found at: {DATA_FILE_PATH} 🟢\n")
     else:
         logger.error("Unable to locate data file 🔴\n")
         raise FileNotFoundError
@@ -302,7 +393,7 @@ def generate_full_features_and_target_datasets(
     # Build features and target datasets
     logger.info(f"Starting preprocessing for: {data_file_name[0:7]} 🚀\n")
     features, target = transform_ts_data_into_lagged_features_and_target(
-        path_to_input=data_path,
+        path_to_input=DATA_FILE_PATH,
         window_seq_len=window,
         step_size=step,
     )
@@ -319,6 +410,10 @@ def generate_full_features_and_target_datasets(
     # Transform X data
     logger.info("Transforming data ... 🐛 -> 🦋\n")
     X = feature_engineering_pipeline.transform(features)
+
+    # Fit X_scaler model to features and save locally
+    if build_scaler:
+        build_and_save_X_scaler_model(X)
 
     logger.info(f"{'⭐'*10} Successfully generated X and y datasets {'⭐'*10}\n")
     logger.info("Features: \n")
@@ -344,21 +439,7 @@ def generate_full_features_and_target_datasets(
 
     # Version datasets with wandb if specified
     if track:
-        logger.info("Versioning data @ W&B backend ✨")
-        run = wandb.init(
-            project=os.environ["WANDB_PROJECT"],
-            name="post_processed_features_target_datasets",
-        )
-        X_table = wandb.Table(dataframe=X)
-        y_table = wandb.Table(dataframe=pd.DataFrame(data=target))
-        run.log(
-            {
-                f"{data_file_name[0:7]}_X_full_preprocessed_data": X_table,
-                f"{data_file_name[0:7]}_y_full_preprocessed_data": y_table,
-            }
-        )
-        wandb.finish()
-        logger.info("Datasets successfully versioned 🟢")
+        version_artifacts_with_wandb(data_file_name, X, target)
 
     # Return the fully preprocessed features and target dataset
     return X, target

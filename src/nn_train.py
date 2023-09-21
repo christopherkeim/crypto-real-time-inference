@@ -15,9 +15,10 @@ test out on a local machine using a CPU, but do note that training on a GPU
 is much faster (and recommended).
 """
 
-from typing import Dict, Tuple, List, Optional
+from typing import Dict, Tuple, List
 from pathlib import Path
 import os
+import pickle
 import wandb
 import click
 
@@ -50,7 +51,7 @@ def get_nn_model_from_name(
     Returns the model constructor for an input name along with
     its hyperparamters.
     """
-    from src.hyperparam_config import CNN_PARAMS, LSTM_PARAMS
+    from hyperparam_config import CNN_PARAMS, LSTM_PARAMS
 
     if name == "cnn":
         return build_cnn_model(n_features), CNN_PARAMS
@@ -64,12 +65,29 @@ def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
     """
     Standardizes features by removing the mean and scaling to unit variance.
     """
+    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
-    # Instantiate the scaler
-    scaler: StandardScaler = StandardScaler()
+
+    # Load the scaler from disk if it exists
+    if SCALER_PATH.exists():
+        logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
+        with open(SCALER_PATH, mode="rb") as f:
+            scaler: StandardScaler = pickle.load(f)
+
+    # Fit a scaler to this data
+    else:
+        logger.info("Fitting scaler model to X ... 🪅\n")
+        scaler: StandardScaler = StandardScaler()
+        scaler.fit(X)
+        logger.info("Scaler model successfully fit 🟢\n")
+
     # Transform the feature dataset
-    X_scaled: np.ndarray = scaler.fit_transform(X)
+    logger.info("Transforming X features ... 🎭\n")
+    X_scaled: np.ndarray = scaler.transform(X)
+    logger.info("X successfully scaled 🟢\n")
+
     # Construct a DataFrame with the same columns as input
     X = pd.DataFrame(X_scaled, columns=column_order)
 
@@ -107,9 +125,7 @@ def ts_train_val_test_split(
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-def evaluate(
-    model: Sequential, X_set: pd.DataFrame, y_set: pd.Series
-) -> Tuple[float, float]:
+def evaluate(model: Sequential, X_set: pd.DataFrame, y_set: pd.Series) -> float:
     """
     Evaluates a given model and returns its Mean Absolute Error.
     """
@@ -124,9 +140,9 @@ def evaluate(
 
 def build_cnn_model(n_features: int) -> Sequential:
     """
-    Builds an CNN neural network model.
+    Builds a CNN neural network model.
     """
-    # Build the LSTM neural network using the Sequential API
+    # Build the CNN neural network using the Sequential API
     cnn_model = Sequential()
     cnn_model.add(InputLayer((n_features, 1)))
     cnn_model.add(Conv1D(256, kernel_size=4))
@@ -137,7 +153,7 @@ def build_cnn_model(n_features: int) -> Sequential:
     cnn_model.add(Activation("relu"))
     cnn_model.add(Dense(1, activation="linear"))
 
-    # Compile the LSTM neural network
+    # Compile the CNN neural network
     cnn_model.compile(
         loss="mean_squared_error",
         optimizer=Adam(learning_rate=0.001),
@@ -149,7 +165,7 @@ def build_cnn_model(n_features: int) -> Sequential:
 
 def build_lstm_model(n_features: int) -> Sequential:
     """
-    Builds an LSTM neural network model.
+    Builds a LSTM neural network model.
     """
     # Build the LSTM neural network using the Sequential API
     lstm_model = Sequential()
@@ -258,10 +274,10 @@ def train_nn_model(
     model_name: str,
     X: pd.DataFrame,
     y: pd.Series,
-    learning_rate: Optional[int] = 0.001,
-    epochs: Optional[int] = 20,
-    batch_size: Optional[int] = 128,
-    track: Optional[bool] = False,
+    learning_rate: int = 0.001,
+    epochs: int = 20,
+    batch_size: int = 128,
+    track: bool = False,
 ) -> None:
     """
     Trains a specified neural network.
@@ -276,6 +292,7 @@ def train_nn_model(
     # Construct the neural network Sequential model
     nn_model, PARAMS = get_nn_model_from_name(model_name, n_features=X.shape[1])
 
+    # Check for GPU
     if tf.config.list_physical_devices("GPU"):
         logger.info("Training on GPU...")
     else:
@@ -420,38 +437,47 @@ def train_nn_model(
     help="Version model in W&B",
 )
 def nn_training_pipeline(
-    model_name: Optional[str] = "cnn",
-    product_id: Optional[str] = "BTC-USD",
-    epochs: Optional[int] = 20,
-    batch_size: Optional[int] = 128,
-    track: Optional[bool] = False,
+    model_name: str = "cnn",
+    product_id: str = "BTC-USD",
+    epochs: int = 20,
+    batch_size: int = 128,
+    track: bool = False,
 ) -> None:
     """
     Full neural network training pipeline.
+
+    Args:
+        model_name (str): Name of the neural net model you want to train
+        product_id (str): Name product data
+        epochs (int): Epochs to train neural net
+        batch_size (int): Number of samples per gradient update
+        track (bool): Version model in W&B
+
+    Returns:
+        None
     """
 
     # Load the preprocessed X and y datasets into memory
     X_PATH: Path = DATA_DIR / f"{product_id}_X_full_preprocessed_data.parquet"
     Y_PATH: Path = DATA_DIR / f"{product_id}_y_full_preprocessed_data.parquet"
 
-    if X_PATH.exists():
-        logger.info(f"{product_id} preprocessed X data found at: {X_PATH} 🟢\n")
-        X: pd.DataFrame = pd.read_parquet(X_PATH)
-    else:
+    if not X_PATH.exists():
         logger.error("Unable to locate X data file 🔴\n")
         raise FileNotFoundError
 
-    if Y_PATH.exists():
-        logger.info(f"{product_id} preprocessed y data found at: {Y_PATH} 🟢\n")
-        y: pd.Series = pd.read_parquet(Y_PATH)["target_price_next_hour"]
-    else:
+    if not Y_PATH.exists():
         logger.error("Unable to locate y data file 🔴\n")
         raise FileNotFoundError
+
+    logger.info(f"{product_id} preprocessed X data found at: {X_PATH} 🟢\n")
+    X: pd.DataFrame = pd.read_parquet(X_PATH)
+
+    logger.info(f"{product_id} preprocessed y data found at: {Y_PATH} 🟢\n")
+    y: pd.Series = pd.read_parquet(Y_PATH)["target_price_next_hour"]
 
     # Scale our X dataset
     logger.info("Scaling X features ... 👉 👈\n")
     X: pd.DataFrame = generate_scaled_features(X)
-    logger.info("X features successfully scaled 🟢\n")
 
     # Train the model
     train_nn_model(model_name, X, y, epochs=epochs, batch_size=batch_size, track=track)
