@@ -189,7 +189,7 @@ def predict(
     return price_next_hour
 
 
-@app.get("/predict/")
+@app.get("/api/predict")
 def get_prediction(
     product_id: str = "BTC-USD",
     date_time_hour: str = "now",
@@ -227,8 +227,8 @@ if __name__ == "__main__":
     uvicorn.run(
         "src.nn_inference:app",
         workers=1,
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
-        reload=False,
+        reload=True,
         log_level="info",
     )
