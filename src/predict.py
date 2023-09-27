@@ -213,6 +213,6 @@ def predict(
         price_next_hour: float = model.predict(feature_row)[0]
 
     else:
-        raise NotImplemented("Model type is not implemented")
+        raise NotImplementedError("Model type is not implemented")
 
     return price_next_hour

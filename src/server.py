@@ -2,7 +2,7 @@
 Backend server for inference service.
 """
 from typing import Dict
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import FastAPI
 import uvicorn
 import pandas as pd
