@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Bottom area */}
           <div className="md:flex md:items-center md:justify-between">
             {/* Social links */}
-            <ul className="flex mb-4 md:order-2 md:ml-4 md:mb-0">
+            <ul className="flex mb-4 md:order-1 md:ml-4 md:mb-0">
               {/* <li>
                 <a
                   className="flex justify-center items-center text-white bg-blue-500 dark:text-blue-500 dark:bg-gray-800 hover:underline hover:bg-blue-600 rounded-full transition duration-150 ease-in-out"
@@ -58,37 +58,24 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Middle links */}
-            <div className="text-sm md:order-1 text-gray-700 mb-2 md:mb-0">
+            {/* Copyrights note */}
+            <div className="text-gray-600 dark:text-gray-400 text-sm mr-4">
+              &copy;{" "}
               <a
-                className="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out"
+                href="https://github.com/christopherkeim/"
+                className="text-blue-600 dark:text-blue-100 hover:underline transition duration-150 ease-in-out"
+              >
+                Christopher Keim
+              </a>
+              . All rights reserved.&nbsp;
+              <a
+                className="text-blue-600 dark:text-blue-100 hover:underline transition duration-150 ease-in-out"
                 href="https://github.com/christopherkeim/crypto-real-time-inference/blob/main/LICENSE"
                 target="_blank"
                 referrerPolicy="no-referrer"
               >
                 License
               </a>
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <div className="inline-block min-h-[0.9em] w-0.5 self-stretch bg-neutral-100 opacity-100 dark:opacity-50"></div>
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <Link
-                className="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out"
-                href="/policy"
-              >
-                Policy
-              </Link>
-            </div>
-
-            {/* Copyrights note */}
-            <div className="text-gray-600 dark:text-gray-400 text-sm mr-4">
-              &copy;{" "}
-              <a
-                href="https://github.com/christopherkeim/"
-                className="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out"
-              >
-                Christopher Keim
-              </a>
-              . All rights reserved.
             </div>
           </div>
         </div>
