@@ -1,19 +1,20 @@
 """
-Inference pipeline for machine learning models.
+Inference pipeline for machine learning and deep learning models.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Callable
 from pathlib import Path
 import requests
 from datetime import datetime, timedelta
 import pickle
-from fastapi import FastAPI
-import uvicorn
 
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sktime.transformations.series.lag import Lag
+from keras import Sequential
+from keras.models import load_model
+
 
 from src.feature_pipeline import (
     _get_time_signal_features,
@@ -23,30 +24,46 @@ from src.logger import get_console_logger
 from src.paths import MODELS_DIR
 
 
-logger = get_console_logger("ml_inference")
+logger = get_console_logger("model_inference")
 
 
-app = FastAPI()
-
-
-def load_model_from_name(model_name: str) -> None:
+def load_ml_model_from_name(model_name: str) -> Callable:
     """
     Takes an input name and returns a model.
     """
     MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model.pkl"
 
     # Validate that the model exists locally
-    if MODEL_PATH.exists():
-        logger.info(f"Loading {model_name}_model.pkl ...")
-    else:
+    if not MODEL_PATH.exists():
         raise NotImplementedError("Model not found 🔴")
+
+    logger.info(f"Loading {model_name}_model.pkl ...")
 
     # Load the model into memory
     with open(MODELS_DIR / f"{model_name}_model.pkl", mode="rb") as f:
-        model = pickle.load(f)
+        ml_model = pickle.load(f)
     logger.info(f"{model_name} successfully loaded 🟢")
 
-    return model
+    return ml_model
+
+
+def load_nn_model_from_name(model_name: str) -> Sequential:
+    """
+    Takes an input name and returns a model.
+    """
+    MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model"
+
+    # Validate that the model exists locally
+    if not MODEL_PATH.exists():
+        raise NotImplementedError("Model not found 🔴")
+
+    logger.info(f"Loading {model_name}_model ...")
+
+    # Load the model into memory
+    nn_model = load_model(str(MODEL_PATH))
+    logger.info(f"{model_name} successfully loaded 🟢")
+
+    return nn_model
 
 
 def download_data_for_t_hours(
@@ -171,60 +188,31 @@ def get_feature_row_for_prediction(
 
 def predict(
     feature_row: pd.DataFrame,
-    model_name: str = "lasso",
+    model_name: str = "cnn",
 ) -> float:
     """
     Takes a feature row and model name and returns that model's prediction
     for the cryptocurrency's price point the next hour.
     """
+    MODEL_TYPE_MAPPINGS: Dict[str, str] = {"cnn": "nn", "lasso": "ml"}
 
-    # Load model into memory
-    model = load_model_from_name(model_name)
+    model_type: str = MODEL_TYPE_MAPPINGS[model_name]
 
-    # Predict the next hour's price
-    price_next_hour: float = model.predict(feature_row)[0]
+    if model_type == "nn":
+        # Load neural network model into memory
+        model = load_nn_model_from_name(model_name)
+
+        # Predict the next hour's price
+        price_next_hour: float = model.predict(feature_row).flatten()[0]
+
+    elif model_type == "ml":
+        # Load machine learning model into memory
+        model = load_ml_model_from_name(model_name)
+
+        # Predict the next hour's price
+        price_next_hour: float = model.predict(feature_row)[0]
+
+    else:
+        raise NotImplementedError("Model type is not implemented")
 
     return price_next_hour
-
-
-@app.get("/predict/")
-def get_prediction(
-    product_id: str = "BTC-USD",
-    date_time_hour: str = "now",
-    model_name: str = "lasso",
-) -> Dict[str, float]:
-    """
-    Takes a cryptocurrency product id, target hour and model name and
-    returns that model's prediction for the cryptocurrency's price point the
-    next hour.
-    """
-
-    if date_time_hour == "now":
-        date_time_hour = datetime.now().strftime("%Y-%m-%dT%H")
-
-    # Download the data for that target hour
-    raw_data: pd.DataFrame = download_data_for_t_hours(
-        product_id=product_id,
-        date_time_hour=date_time_hour,
-        t=24,
-    )
-
-    # Engineer features for model consumption
-    feature_row: pd.DataFrame = get_feature_row_for_prediction(raw_data)
-
-    # Get the prediction
-    price_next_hour: float = predict(feature_row, model_name=model_name)
-
-    # Return it as a JSON object
-    return {"price_next_hour": price_next_hour}
-
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "src.ml_inference:app",
-        workers=1,
-        host="0.0.0.0",
-        port=8000,
-        reload=False,
-        log_level="info",
-    )

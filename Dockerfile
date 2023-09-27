@@ -69,17 +69,11 @@ RUN poetry install --no-root
 FROM builder-base as development
 
 # Project files
-COPY ./src/__init__.py /app/src/
-COPY ./src/feature_pipeline.py /app/src/
-COPY ./src/logger.py /app/src/
-COPY ./src/paths.py /app/src/
-COPY ./src/nn_inference.py /app/src/
-COPY ./models /app/models/
+COPY ./src/__init__.py ./src/feature_pipeline.py ./src/logger.py ./src/paths.py ./src/predict.py ./src/server.py src/
+COPY ./models models/
 
 WORKDIR /app/
 
 EXPOSE 8000
 
-CMD ["poetry", "run", "python", "src/nn_inference.py"]
-
-# docker build -t nn_inference:v0 .
+CMD ["poetry", "run", "python", "-m", "uvicorn", "src.server:app", "--host", "0.0.0.0"]

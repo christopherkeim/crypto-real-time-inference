@@ -81,36 +81,26 @@ make train
 make nntrain
 ```
 
-## Machine Learning Inference (Endpoint)
+## Model Prediction (Endpoint)
 
-8. To start the machine learning inference service locally using FastAPI and Uvicorn, run:
+8. To start the prediction service locally using FastAPI and Uvicorn, run:
 
 ```bash
 make predict
 ```
 
-You can curl the `http://0.0.0.0:8000/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Lasso Regressor for the current next hour's price point (defaults)
+You can curl the `http://127.0.0.1:8000/api/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Convolutional Neural Network for the current next hour's price point (defaults)
 
-## Deep Learning Inference (Endpoint)
+## Model Prediction Service Containerization
 
-9. To start the neural network inference service locally using FastAPI and Uvicorn, run:
-
-```bash
-make nnpredict
-```
-
-You can curl the `http://0.0.0.0:8000/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Convolutional Neural Network for the current next hour's price point (defaults)
-
-## Deep Learning Inference Service Containerization
-
-10. To build the neural network inference service into a Docker container, navigate to the root of this repository and run:
+9. To build the prediction service into a Docker container, navigate to the root of this repository and run:
 
 ```bash
-docker build -t nn_inference:v0 .
-docker run -p 8000:8000 nn_inference:v0
+docker build -t predict:v0 .
+docker run -p 8000:8000 predict:v0
 ```
 
-The containerized neural network inference service will serve predictions at `http://0.0.0.0:8000/predict` as above.
+The containerized neural network inference service will serve predictions at `http://0.0.0.0:8000/api/predict`.
 
 ### More to come (see below)
 

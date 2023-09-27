@@ -14,10 +14,7 @@ nntrain:
 	poetry run python src/nn_train.py
 
 predict:
-	poetry run python src/ml_inference.py
-
-nnpredict:
-	poetry run python src/nn_inference.py
+	poetry run python src/server.py
 
 test:
 	#poetry run pytest .
