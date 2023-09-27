@@ -63,6 +63,8 @@ export default function Footer() {
               <a
                 className="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out"
                 href="https://github.com/christopherkeim/crypto-real-time-inference/blob/main/LICENSE"
+                target="_blank"
+                referrerPolicy="no-referrer"
               >
                 License
               </a>
