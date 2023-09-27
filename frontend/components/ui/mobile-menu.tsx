@@ -91,6 +91,15 @@ export default function MobileMenu() {
             <ul>
               <li>
                 <Link
+                  href="/"
+                  className="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2"
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/about"
                   className="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2"
                   onClick={() => setMobileNavOpen(false)}
@@ -100,46 +109,12 @@ export default function MobileMenu() {
               </li>
               <li>
                 <Link
-                  href="/blog"
+                  href="/policy"
                   className="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2"
                   onClick={() => setMobileNavOpen(false)}
                 >
-                  Blog
+                  Policy
                 </Link>
-              </li>
-              <li>
-                <Link
-                  href="/testimonials"
-                  className="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2"
-                  onClick={() => setMobileNavOpen(false)}
-                >
-                  Testimonials
-                </Link>
-              </li>
-              <li className="py-2 my-2 border-t border-b border-gray-200 dark:border-gray-800">
-                <span className="flex text-gray-600 dark:text-gray-400 py-2">
-                  Resources
-                </span>
-                <ul className="pl-4">
-                  <li>
-                    <Link
-                      href="/help"
-                      className="text-sm flex font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 py-2"
-                      onClick={() => setMobileNavOpen(false)}
-                    >
-                      Help center
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/404"
-                      className="text-sm flex font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 py-2"
-                      onClick={() => setMobileNavOpen(false)}
-                    >
-                      404
-                    </Link>
-                  </li>
-                </ul>
               </li>
               <li>
                 <Link
@@ -147,7 +122,7 @@ export default function MobileMenu() {
                   className="font-medium w-full inline-flex items-center justify-center border border-transparent px-4 py-2 my-2 rounded text-white bg-blue-500 hover:bg-blue-400 transition duration-150 ease-in-out"
                   onClick={() => setMobileNavOpen(false)}
                 >
-                  Request code
+                  Contact
                 </Link>
               </li>
             </ul>
