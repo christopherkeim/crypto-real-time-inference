@@ -13,7 +13,6 @@
   "dependencies": {
     "@headlessui/react": "^1.7.14",
     "aos": "^3.0.0-beta.6",
-    "contentlayer": "^0.3.2",
     "date-fns": "^2.30.0",
     "next": "^13.4.1",
     "next-themes": "^0.2.1",
@@ -22,16 +21,18 @@
     "swiper": "^8.4.7"
   },
   "devDependencies": {
-    "@types/node": "^20.1.0",
-    "@types/react": "^18.2.5",
-    "@types/react-dom": "^18.2.4",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/aos": "^3.0.4",
+    "@types/node": "^20.1.0",
+    "@types/react": "^18.2.5",
+    "@types/react-dom": "^18.2.4",
     "autoprefixer": "^10.4.14",
+    "concurrently": "^8.0.1",
     "postcss": "^8.4.23",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.4",
     "tailwindcss": "^3.3.2",
-    "typescript": "^5.0.4",
-    "concurrently": "^8.0.1"
+    "typescript": "^5.0.4"
   }
 }
