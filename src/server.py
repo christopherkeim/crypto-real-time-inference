@@ -2,6 +2,7 @@
 Backend server for inference service.
 """
 from typing import Dict
+from enum import Enum
 from datetime import datetime
 from fastapi import FastAPI
 import uvicorn
@@ -22,25 +23,43 @@ logger = get_console_logger("prediction_server")
 app = FastAPI()
 
 
+class Coin(str, Enum):
+    bitcoin = "BTC-USD"
+
+
+class Time(str, Enum):
+    now = "now"
+
+
+class ModelName(str, Enum):
+    cnn = "cnn"
+    lasso = "lasso"
+
+
 @app.get("/api/predict")
 def get_prediction(
-    product_id: str = "BTC-USD",
-    date_time_hour: str = "now",
-    model_name: str = "cnn",
+    coin: Coin = "BTC-USD",
+    time_from: Time = "now",
+    model_name: ModelName = "cnn",
 ) -> Dict[str, float]:
     """
     Takes a cryptocurrency product id, target hour and model name and
     returns that model's prediction for the cryptocurrency's price point the
     next hour.
+
+    Args:
+      coin (str): The product ID of the cryptocurrency
+      time_from (str): The datetime hour to predict price point in +1 hour from
+      model_name (str): Name of model
     """
 
-    if date_time_hour == "now":
-        date_time_hour = datetime.now().strftime("%Y-%m-%dT%H")
+    if time_from == "now":
+        time_from = datetime.now().strftime("%Y-%m-%dT%H")
 
     # Download the data for that target hour
     raw_data: pd.DataFrame = download_data_for_t_hours(
-        product_id=product_id,
-        date_time_hour=date_time_hour,
+        product_id=coin,
+        date_time_hour=time_from,
         t=24,
     )
 
@@ -49,8 +68,6 @@ def get_prediction(
 
     # Get the prediction
     price_next_hour: float = predict(feature_row, model_name=model_name)
-
-    # Cache the prediction
 
     # Return it as a JSON object
     return {"price_next_hour": price_next_hour}
