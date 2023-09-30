@@ -83,3 +83,5 @@ set_environment_variables.sh
 # Node Modules
 frontend/node_modules/
 frontend/.next/
+.env.local
+
