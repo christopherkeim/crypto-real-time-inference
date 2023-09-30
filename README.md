@@ -25,6 +25,7 @@ Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bi
 ### Setup
 
 **Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated setup.**
+Will **_probabaly_** still work on other Debian flavored Linux distros, but YMMV.
 
 1. You can clone this repository onto a machine with:
 
@@ -101,6 +102,54 @@ docker run -p 8000:8000 predict:v0
 ```
 
 The containerized neural network inference service will serve predictions at `http://0.0.0.0:8000/api/predict`.
+
+## Frontend Client Setup
+
+10. To setup the frontend client, navigate to the `frontend` directory and run:
+
+```bash
+npm install
+```
+
+You will also need to make a copy of `.env.local.example` and rename it to `.env.local`:
+
+```bash
+cp .env.local.example .env.local
+```
+
+The default values in `.env.local` should work out of the box for local development. If you change where the backend prediction service is hosted, you will need to update the `CRYPTO_INFERENCE_API_URI` variable in `.env.local` to reflect the new URI.
+
+## Frontend Client Development
+
+11. To start the frontend client development server, navigate to the `frontend` directory and run:
+
+```bash
+npm run dev
+```
+
+The default configuration will spin up the frontend client development server at `http://localhost:3000` and the backend prediction service at `http://localhost:8000`, with Hot Module Reload enabled for both.
+
+It is also possible to run the frontend sever by itself, without the backend prediction service, by running:
+
+```bash
+npm run next-dev
+```
+
+## Frontend Client Production Build
+
+12. To build the frontend client for production, navigate to the `frontend` directory and run:
+
+```bash
+npm run build
+```
+
+This will build the frontend client into the `frontend/.next` directory. To serve the production build, run:
+
+```bash
+npm run start
+```
+
+A great candidate for deployment is like [Vercel](https://vercel.com), just make sure you set the `frontend` directory as the project directory after linking your repo. Other cloud providers will work as long as then call `npm run build` and `npm run start` in the root of the `frontend` directory.
 
 ### More to come (see below)
 
