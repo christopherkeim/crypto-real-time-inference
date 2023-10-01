@@ -22,6 +22,7 @@ export function PredictionForm({ setPrediction }: PredictionFormProps) {
     event.preventDefault();
     try {
       // Fire off fetch to predict endpoint
+      // TODO: Change this to the real endpoint
       const response = await fetch("/mock", {
         method: "POST",
         headers: {
