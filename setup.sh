@@ -1,10 +1,11 @@
 #! /bin/bash
 # This script sets up a local development environment on an Ubuntu 20.04/22.04 machine
-# to work with Poetry managed Python3.10 projects. 
+# to work with Poetry managed Python3.10 projects.
 # 
 # Targets:
 #   - Poetry 1.5.1
 #   - Python3.10
+#   - Docker 24.0.6
 #
 # Requirements:
 #   - Ubuntu 20.04/22.04
