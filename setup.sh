@@ -12,8 +12,25 @@
 #   - Python3.7+ 
 #
 # -----------------------------------------------------------------------------------------------------------
-# 1) Base Requirements: this will ensure that you have curl and make installed.
+# 1) Base Requirements: this will ensure that you have ca-certificates, curl, make, and gnupg installed.
 # -----------------------------------------------------------------------------------------------------------
+
+# Check if ca-certificates is in the apt-cache
+if ( apt-cache show ca-certificates > /dev/null )
+then
+  echo "ca-certificates is already cached 🟢"
+else
+  sudo apt update
+fi
+
+# Ensure ca-certificates package is installed on the machine
+if ( which update-ca-certificates > /dev/null )
+then
+  echo "ca-certificates is already installed 🟢"
+else
+  echo "Installing ca-certificates 📜"
+  sudo apt-get install -y ca-certificates
+fi
 
 # Check if curl is in the apt-cache
 if ( apt-cache show curl > /dev/null )
@@ -24,7 +41,7 @@ else
 fi
 
 # Ensure curl is installed on the machine
-if [ -n "$(which curl)" ]
+if ( which curl > /dev/null )
 then
   echo "curl is already installed 🟢"
 else
@@ -41,7 +58,7 @@ else
 fi
 
 # Ensure make is installed on the machine
-if [ -n "$(which make)" ]
+if ( which make > /dev/null )
 then
   echo "make is already installed 🟢"
 else
@@ -49,12 +66,30 @@ else
   sudo apt install -y make
 fi
 
+# Check if gnupg is in the apt-cache
+if ( apt-cache show gpg > /dev/null )
+then
+  echo "gnupg is already cached 🟢"
+else
+  sudo apt update
+fi
+
+# Ensure gnupg is installed on the machine
+if ( which gpg > /dev/null )
+then
+  echo "make is already installed 🟢"
+else
+  echo "Installing gnugp 🔧"
+  sudo apt install -y gnupg
+fi
+
+
 # -----------------------------------------------------------------------------------------------------------
 # 2) Poetry Install: here we'll install and configure Poetry, as well as add Poetry to the PATH.
 # -----------------------------------------------------------------------------------------------------------
 
 # Install Poetry using the official installer
-if [ -n "$(which poetry)" ]
+if ( which poetry > /dev/null )
 then
   echo "Poetry is already installed 🟢"
 else
@@ -113,7 +148,7 @@ else
 fi
 
 # Now you can download Python3.10
-if [ -n "$(which python3.10)" ]
+if ( which python3.10 > /dev/null )
 then
   echo "Python3.10 already installed 🐍"
 else
@@ -122,7 +157,7 @@ else
 fi
 
 # Verify Python3.10 installation
-if [ -n "$(which python3.10)" ]
+if ( which python3.10 > /dev/null )
 then
   echo "$(python3.10 --version) 🐍 🚀 ✨"
 else
@@ -138,6 +173,7 @@ fi
 # you need to set up the Docker repository. Afterward, you can install and update Docker from the repository.
 # -----------------------------------------------------------------------------------------------------------
 
+# Pull the current machine's distro for GPG key targeting
 DISTRO=$(lsb_release -d | awk -F ' ' '{print tolower($2)}')
 
 # Add Docker’s official GPG key
@@ -146,10 +182,6 @@ then
   echo 'Docker GPG Key already installed at /etc/apt/keyrings/docker.gpg 🟢'
 else
   echo 'Installing Docker GPG Key at /etc/apt/keyrings/docker.gpg 🔧'
-  
-  # Update the apt package index and install packages to allow apt to use a repository over HTTPS
-  sudo apt-get update
-  sudo apt-get install -y ca-certificates curl gnupg
   
   # Create the /etc/apt/keyrings directory with appropriate permissions
   sudo install -m 0755 -d /etc/apt/keyrings
@@ -184,7 +216,7 @@ else
 fi
 
 # Install Docker Engine, containerd, and Docker Compose
-if [ "$(docker --version)" ]
+if ( docker --version > /dev/null )
 then
   echo "Docker is already installed 🟢"
   echo "Using $(docker --version)"
