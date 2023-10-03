@@ -67,6 +67,7 @@ then
   echo "Poetry is already in PATH 🟢"
 else
   echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
+  source ~/.bashrc
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
@@ -136,6 +137,8 @@ fi
 # you need to set up the Docker repository. Afterward, you can install and update Docker from the repository.
 # -----------------------------------------------------------------------------------------------------------
 
+DISTRO=$(lsb_release -d | awk -F ' ' '{print tolower($2)}')
+
 # Add Docker’s official GPG key
 if [ -f /etc/apt/keyrings/docker.gpg ]
 then
@@ -151,7 +154,7 @@ else
   sudo install -m 0755 -d /etc/apt/keyrings
   
   # Download the GPG key from Docker
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   sudo chmod a+r /etc/apt/keyrings/docker.gpg
 fi
 
@@ -162,7 +165,7 @@ then
 else
   echo 'Installing docker.list repository at /etc/apt/sources.list.d/docker.list 🔧'
   echo \
-    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$DISTRO \
     "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 fi
