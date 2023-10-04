@@ -25,7 +25,7 @@ Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bi
 ### Setup
 
 **Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated setup.**
-Will **_probabaly_** still work on other Debian flavored Linux distros, but YMMV.
+Will **_probably_** still work on other Debian flavored Linux distros, but YMMV.
 
 1. You can clone this repository onto a machine with:
 
@@ -149,7 +149,7 @@ This will build the frontend client into the `frontend/.next` directory. To serv
 npm run start
 ```
 
-A great candidate for deployment is like [Vercel](https://vercel.com), just make sure you set the `frontend` directory as the project directory after linking your repo. Other cloud providers will work as long as then call `npm run build` and `npm run start` in the root of the `frontend` directory.
+A great candidate for deployment is [Vercel](https://vercel.com), just make sure you set the `frontend` directory as the project directory after linking your repo. Other cloud providers will work as long as then call `npm run build` and `npm run start` in the root of the `frontend` directory.
 
 ### More to come (see below)
 
