@@ -73,14 +73,18 @@ def download_model_from_wandb(model_name: str) -> None:
     Fetches and downloads a specified model from the W&B backend.
     """
     logger.info(f"Fetching {model_name}_model from W&B backend ✨")
+
     run = wandb.init()
+    # Fetch the model using the Public API
     reg_model = wandb.use_artifact(
         f"{os.environ['WANDB_ENTITY']}/model-registry/{model_name}_model:latest",
         type="model",
     )
-    model_dir = reg_model.download(MODELS_DIR)
-    logger.info(f"Successfully download model to: {model_dir} 🟢")
+    # Download the model to disk
+    model_path = reg_model.download(MODELS_DIR)
     run.finish()
+
+    logger.info(f"Successfully downloaded model to: {model_path} 🟢")
 
 
 def download_data_for_t_hours(
