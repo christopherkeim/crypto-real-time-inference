@@ -22,7 +22,7 @@ echo "Using default 'all' as MODELS selection"
 fi
 
 # Setup the deployment environment
-bash deploy/setup_deploy.sh
+bash deploy/setup_deploy_deb.sh
 
 # Set environment variables for model downloads
 source ./deploy/environment.sh
