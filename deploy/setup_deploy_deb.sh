@@ -102,7 +102,7 @@ then
   echo "Poetry is already in PATH 🟢"
 else
   echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  export PATH="/home/$USER/.local/bin:$PATH
+  export PATH="/home/$USER/.local/bin:$PATH"
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
@@ -135,7 +135,6 @@ else
   sudo apt install -y software-properties-common
 fi
 
-curl https://www.python.org/ftp/python/3.10.8/Python-3.10.8.tgz --output Python-3.10.8.tgz
 
 # Now you can download Python3.10
 if ( which python3.10 > /dev/null )
