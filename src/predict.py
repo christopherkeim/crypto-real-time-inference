@@ -4,11 +4,9 @@ Inference pipeline for machine learning and deep learning models.
 
 from typing import Dict, List, Callable
 from pathlib import Path
-import os
 import requests
 from datetime import datetime, timedelta
 import pickle
-import wandb
 
 import pandas as pd
 import numpy as np
@@ -35,9 +33,9 @@ def load_ml_model_from_name(model_name: str) -> Callable:
     """
     MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model.pkl"
 
-    # If the model doesn't exist locally, download it from W&B
+    # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        download_model_from_wandb(model_name)
+        raise NotImplementedError(f"{model_name}_model not found 🔴")
 
     logger.info(f"Loading {model_name}_model.pkl ...")
 
@@ -55,9 +53,9 @@ def load_nn_model_from_name(model_name: str) -> Sequential:
     """
     MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model"
 
-    # If the model doesn't exist locally, download it from W&B
+    # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        download_model_from_wandb(model_name)
+        raise NotImplementedError(f"{model_name}_model not found 🔴")
 
     logger.info(f"Loading {model_name}_model ...")
 
@@ -66,25 +64,6 @@ def load_nn_model_from_name(model_name: str) -> Sequential:
     logger.info(f"{model_name} successfully loaded 🟢")
 
     return nn_model
-
-
-def download_model_from_wandb(model_name: str) -> None:
-    """
-    Fetches and downloads a specified model from the W&B backend.
-    """
-    logger.info(f"Fetching {model_name}_model from W&B backend ✨")
-
-    run = wandb.init()
-    # Fetch the model using the Public API
-    reg_model = wandb.use_artifact(
-        f"{os.environ['WANDB_ENTITY']}/model-registry/{model_name}_model:latest",
-        type="model",
-    )
-    # Download the model to disk
-    model_path = reg_model.download(MODELS_DIR)
-    run.finish()
-
-    logger.info(f"Successfully downloaded model to: {model_path} 🟢")
 
 
 def download_data_for_t_hours(
@@ -120,9 +99,9 @@ def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
 
-    # If the scaler model doesn't exist locally, download it from W&B
+    # Validate that the scaler model exists locally
     if not SCALER_PATH.exists():
-        download_model_from_wandb("X_scaler")
+        raise NotImplementedError("X_scaler_model not found 🔴")
 
     # Load the scaler from disk
     logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
