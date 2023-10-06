@@ -41,7 +41,7 @@ def download_model_from_wandb(model_name: str) -> None:
 )
 def download_latest_models_from_wandb(selection: str = "all") -> None:
     """
-    Takes a selection value ("all", "nn", or "ml") and downloads those latest
+    Takes a selection value ("all", "nn", or "ml") and downloads the latest
     model versions from W&B.
     """
     MODELS: Dict[str, List[str]] = {
@@ -54,6 +54,8 @@ def download_latest_models_from_wandb(selection: str = "all") -> None:
 
     for model in MODELS[selection]:
         download_model_from_wandb(model)
+
+    logger.info("Models successfully downloaded 🟢")
 
 
 if __name__ == "__main__":
