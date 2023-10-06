@@ -102,7 +102,7 @@ then
   echo "Poetry is already in PATH 🟢"
 else
   echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  source ~/.bashrc
+  export PATH="/home/$USER/.local/bin:$PATH
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
