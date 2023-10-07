@@ -90,8 +90,6 @@ else
   source ~/.poetry
 fi
 
-echo "New Path: $PATH"
-
 # Configure Poetry to put build all virtual environments in the project's directory
 if [ "$(poetry config virtualenvs.in-project)" == "true" ]
 then
