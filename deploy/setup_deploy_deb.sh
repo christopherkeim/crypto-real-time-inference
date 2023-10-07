@@ -76,7 +76,7 @@ then
   echo "Poetry is already installed 🟢"
 else
   echo "Installing Poetry 🧙‍♂️"
-  curl -sSL https://install.python-poetry.org | python3 -
+  curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
 fi
 
 # Add Poetry to the path in the current user's .bashrc
@@ -86,7 +86,7 @@ then
 else
   touch ~/.poetry
   echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.poetry
-  echo -e "\n# Poetry Configuration File\nsource ~/.poetry" >> ~/.profile
+  echo -e "\n# Poetry Configuration File\nsource ~/.poetry" >> ~/.bashrc
   source ~/.poetry
 fi
 
