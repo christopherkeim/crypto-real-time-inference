@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # This script sets up a deployment environment on an Ubuntu 20.04/22.04 OR Debian
 # machine to work with Poetry managed Python3.10 source code.
 # 
@@ -102,8 +102,11 @@ if ( poetry --version > /dev/null )
 then
   echo "Poetry is already in PATH 🟢"
 else
-  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  source ~/.bashrc
+  touch ~/.poetryrc
+  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.poetryrc
+  echo -e "# Poetry Configuration\nexport POETRY_VIRTUALENVS_IN_PROJECT=true" >> ~/.poetryrc
+  echo -e "# Poetry Configuration File\nsource ~/.poetryrc" >> ~/.bashrc
+  source ~/.poetryrc
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
