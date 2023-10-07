@@ -1,0 +1,69 @@
+name: Push Docker Image to Docker Hub
+on:
+  push:
+    branches: ["chris/build-dockerhub-pipeline"]
+
+env:
+  WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
+  WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+  PYTHON_VERSION: 3.10
+  POETRY_VERSION: 1.5.1
+  POETRY_URL: https://install.python-poetry.org
+  POETRY_VIRTUALENVS_IN_PROJECT: true
+
+jobs:
+  push_to_registry:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: install system dependencies
+        run: |
+          sudo apt update && sudo apt upgrade -y
+          sudo apt install -y make
+
+      - name: Cache Poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-cache-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ env.POETRY_VERSION }}
+
+      - name: Cache Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          curl -sSL ${{ env.POETRY_URL }} | python - --version ${{ env.POETRY_VERSION }}
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry --version
+
+      - name: Install Packages with Poetry
+        run: |
+          poetry install --no-interaction
+
+      - name: Pull Models from Registry
+        run: poetry run python deploy/download_models_from_wandb.py
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/predict:latest
