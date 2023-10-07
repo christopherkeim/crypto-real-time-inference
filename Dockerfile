@@ -45,7 +45,12 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
     curl \
     make \
     gcc \
-    pciutils
+    pciutils \
+    build-essential \
+    libbz2-dev \ 
+    libffi-dev \ 
+    libssl-dev \ 
+    python3-dev
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -55,7 +60,6 @@ WORKDIR /app/
 
 # Copy project pyproject.toml and poetry.lock here to ensure they'll be cached.
 COPY ./pyproject.toml .
-COPY ./poetry.lock .
 
 # Install runtime dependencies with Poetry - uses $POETRY_VIRTUALENVS_IN_PROJECT and
 # $POETRY_NO_INTERACTION 
