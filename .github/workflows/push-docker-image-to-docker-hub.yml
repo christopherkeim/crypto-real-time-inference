@@ -6,7 +6,7 @@ on:
 env:
   WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
   WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
-  PYTHON_VERSION: 3.10
+  PYTHON_VERSION: "3.10"
   POETRY_VERSION: 1.5.1
   POETRY_URL: https://install.python-poetry.org
   POETRY_VIRTUALENVS_IN_PROJECT: true
