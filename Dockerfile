@@ -41,16 +41,10 @@ FROM python-base as builder-base
 
 # Install system dependencies
 RUN apt-get update && apt-get -y install --no-install-recommends \
-    ffmpeg \ 
     curl \
     make \
     gcc \
-    pciutils \
-    build-essential \
-    libbz2-dev \ 
-    libffi-dev \ 
-    libssl-dev \ 
-    python3-dev
+    pciutils
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -

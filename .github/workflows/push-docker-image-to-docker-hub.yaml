@@ -15,11 +15,11 @@ jobs:
   push_to_registry:
     strategy:
       matrix:
-        target_platform: ["linux/amd64", "linux/arm/v8"]
+        target_platform: ["linux/amd64", "linux/arm64"]
         include:
           - target_platform: "linux/amd64"
             platform_tag: "amd64"
-          - target_platform: "linux/arm/v8"
+          - target_platform: "linux/arm64"
             platform_tag: "arm64"
 
     runs-on: ubuntu-latest
