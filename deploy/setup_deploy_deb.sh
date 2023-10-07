@@ -147,7 +147,7 @@ then
   echo "Python3.10 already installed 🐍"
 else
   echo "Installing Python3.10 🔧"
-  sudo apt install -y build-essential libbz2-dev libffi-dev libssl-dev
+  sudo apt install -y build-essential libbz2-dev libffi-dev libssl-dev python3-dev
   curl https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz --output Python-3.10.12.tgz
   tar xzf Python-3.10.12.tgz 
   pushd Python-3.10.12
