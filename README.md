@@ -1,9 +1,14 @@
-[![CI](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml)
-[![Build and Push Prediction Service to Docker Hub](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/push-docker-image-to-docker-hub.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/push-docker-image-to-docker-hub.yaml)
+[![CI](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml)
+[![Build and Push Prediction Service to Docker Hub](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml)
 ![Python Version](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 ![W&B](https://img.shields.io/badge/Experiment%20Tracking-W%26B-yellow?labelColor=black&color=yellow)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
 # crypto-real-time-inference
 
@@ -25,8 +30,7 @@ Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bi
 
 ### Setup
 
-**Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated setup.**
-Will **_probably_** still work on other Debian flavored Linux distros, but YMMV.
+**Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated dev setup.**
 
 1. You can clone this repository onto a machine with:
 
@@ -83,7 +87,7 @@ make train
 make nntrain
 ```
 
-## Model Prediction (Endpoint)
+### Model Prediction (Endpoint)
 
 8. To start the prediction service locally using FastAPI and Uvicorn, run:
 
@@ -91,18 +95,33 @@ make nntrain
 make predict
 ```
 
-You can curl the `http://127.0.0.1:8000/api/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Convolutional Neural Network for the current next hour's price point (defaults)
+You can curl the `http://0.0.0.0:8000/api/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Convolutional Neural Network for the current next hour's price point (defaults)
 
-## Model Prediction Service Containerization
+<details>
+
+<summary>Prediction Backend</summary>
+
+## Prediction Service Containerization
 
 9. To build the prediction service into a Docker container, navigate to the root of this repository and run:
 
 ```bash
-docker build -t predict:v0 .
-docker run -p 8000:8000 predict:v0
+docker build -t crypto-real-time-inference:v0 .
 ```
 
-The containerized neural network inference service will serve predictions at `http://0.0.0.0:8000/api/predict`.
+10. To start prediction service container, run:
+
+```bash
+docker run -p 8000:8000 crypto-real-time-inference:v0
+```
+
+The containerized prediction service will serve predictions at `http://0.0.0.0:8000/api/predict`.
+
+</details>
+
+<details>
+
+<summary>Frontend</summary>
 
 ## Frontend Client Setup
 
@@ -120,7 +139,7 @@ cp .env.local.example .env.local
 
 The default values in `.env.local` should work out of the box for local development. If you change where the backend prediction service is hosted, you will need to update the `CRYPTO_INFERENCE_API_URI` variable in `.env.local` to reflect the new URI.
 
-## Frontend Client Development
+### Frontend Client Development
 
 11. To start the frontend client development server, navigate to the `frontend` directory and run:
 
@@ -136,7 +155,7 @@ It is also possible to run the frontend sever by itself, without the backend pre
 npm run next-dev
 ```
 
-## Frontend Client Production Build
+### Frontend Client Production Build
 
 12. To build the frontend client for production, navigate to the `frontend` directory and run:
 
@@ -151,6 +170,8 @@ npm run start
 ```
 
 A great candidate for deployment is [Vercel](https://vercel.com), just make sure you set the `frontend` directory as the project directory after linking your repo. Other cloud providers will work as long as then call `npm run build` and `npm run start` in the root of the `frontend` directory.
+
+</details>
 
 ### More to come (see below)
 
@@ -167,6 +188,8 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 - [x] Minimum viable Training Pipelines (ML & DL)
 
 - [x] Minimum viable Inference Pipeline (REST API)
+
+- [x] Continuous Delivery to Docker Hub (CD, `x86_64`, `arm64` targets)
 
 - [ ] Frontend
 
