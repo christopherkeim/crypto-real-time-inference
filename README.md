@@ -1,4 +1,5 @@
 [![CI](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/cicd.yaml)
+[![Build and Push Prediction Service to Docker Hub](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/push-docker-image-to-docker-hub.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/push-docker-image-to-docker-hub.yaml)
 ![Python Version](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
