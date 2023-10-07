@@ -11,6 +11,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+poetry.lock
 
 # Unit test / coverage reports
 htmlcov/

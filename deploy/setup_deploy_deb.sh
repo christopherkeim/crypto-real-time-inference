@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # This script sets up a deployment environment on an Ubuntu 20.04/22.04 OR Debian
 # machine to work with Poetry managed Python3.10 source code.
 # 
@@ -13,24 +13,6 @@
 # -----------------------------------------------------------------------------------------------------------
 # 1) Base Requirements: this will ensure that you have ca-certificates, curl, make, and gnupg installed.
 # -----------------------------------------------------------------------------------------------------------
-
-# Check if ca-certificates is in the apt-cache
-# TODO: Find a way to check if ca-certificates is installed on Debian
-if ( apt-cache show ca-certificates > /dev/null )
-then
-  echo "ca-certificates is already cached 🟢"
-else
-  sudo apt update
-fi
-
-# Ensure ca-certificates package is installed on the machine
-if ( which update-ca-certificates > /dev/null )
-then
-  echo "ca-certificates is already installed 🟢"
-else
-  echo "Installing ca-certificates 📜"
-  sudo apt-get install -y ca-certificates
-fi
 
 # Check if curl is in the apt-cache
 if ( apt-cache show curl > /dev/null )
@@ -94,7 +76,7 @@ then
   echo "Poetry is already installed 🟢"
 else
   echo "Installing Poetry 🧙‍♂️"
-  curl -sSL https://install.python-poetry.org | python3 -
+  curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
 fi
 
 # Add Poetry to the path in the current user's .bashrc
@@ -102,8 +84,10 @@ if ( poetry --version > /dev/null )
 then
   echo "Poetry is already in PATH 🟢"
 else
-  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  source ~/.bashrc
+  touch ~/.poetry
+  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.poetry
+  echo -e "\n# Poetry Configuration File\nsource ~/.poetry" >> ~/.bashrc
+  source ~/.poetry
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
@@ -143,10 +127,10 @@ then
   echo "Python3.10 already installed 🐍"
 else
   echo "Installing Python3.10 🔧"
-  sudo apt install -y build-essential
-  curl https://www.python.org/ftp/python/3.10.8/Python-3.10.8.tgz --output Python-3.10.8.tgz
-  tar xzf Python-3.10.8.tgz 
-  pushd Python-3.10.8
+  sudo apt install -y build-essential libbz2-dev libffi-dev libssl-dev python3-dev
+  curl https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz --output Python-3.10.12.tgz
+  tar xzf Python-3.10.12.tgz 
+  pushd Python-3.10.12
   ./configure --enable-optimizations 
   sudo make -j 4
   sudo make altinstall 
