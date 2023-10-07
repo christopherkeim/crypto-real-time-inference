@@ -14,24 +14,6 @@
 # 1) Base Requirements: this will ensure that you have ca-certificates, curl, make, and gnupg installed.
 # -----------------------------------------------------------------------------------------------------------
 
-# Check if ca-certificates is in the apt-cache
-# TODO: Find a way to check if ca-certificates is installed on Debian
-if ( apt-cache show ca-certificates > /dev/null )
-then
-  echo "ca-certificates is already cached 🟢"
-else
-  sudo apt update
-fi
-
-# Ensure ca-certificates package is installed on the machine
-if ( which update-ca-certificates > /dev/null )
-then
-  echo "ca-certificates is already installed 🟢"
-else
-  echo "Installing ca-certificates 📜"
-  sudo apt-get install -y ca-certificates
-fi
-
 # Check if curl is in the apt-cache
 if ( apt-cache show curl > /dev/null )
 then
