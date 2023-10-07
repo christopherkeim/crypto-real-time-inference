@@ -70,9 +70,14 @@ FROM builder-base as development
 
 # Project files
 COPY ./src/__init__.py ./src/feature_pipeline.py ./src/logger.py ./src/paths.py ./src/predict.py ./src/server.py src/
-COPY ./models models/
+COPY ./deploy deploy/
 
 WORKDIR /app/
+
+ARG WANDB_ENTITY
+
+RUN bash deploy/environment.sh ${WANDB_ENTITY}
+RUN poetry run python deploy/download_models_from_wandb.py
 
 EXPOSE 8000
 

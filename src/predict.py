@@ -35,7 +35,7 @@ def load_ml_model_from_name(model_name: str) -> Callable:
 
     # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        raise NotImplementedError("Model not found 🔴")
+        raise NotImplementedError(f"{model_name}_model not found 🔴")
 
     logger.info(f"Loading {model_name}_model.pkl ...")
 
@@ -55,7 +55,7 @@ def load_nn_model_from_name(model_name: str) -> Sequential:
 
     # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        raise NotImplementedError("Model not found 🔴")
+        raise NotImplementedError(f"{model_name}_model not found 🔴")
 
     logger.info(f"Loading {model_name}_model ...")
 
@@ -99,18 +99,14 @@ def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
 
-    # Load the scaler from disk if it exists
-    if SCALER_PATH.exists():
-        logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
-        with open(SCALER_PATH, mode="rb") as f:
-            scaler: StandardScaler = pickle.load(f)
+    # Validate that the scaler model exists locally
+    if not SCALER_PATH.exists():
+        raise NotImplementedError("X_scaler_model not found 🔴")
 
-    # Fit a scaler to this data
-    else:
-        logger.info("Fitting scaler model to X ... 🪅\n")
-        scaler: StandardScaler = StandardScaler()
-        scaler.fit(X)
-        logger.info("Scaler model successfully fit 🟢\n")
+    # Load the scaler from disk
+    logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
+    with open(SCALER_PATH, mode="rb") as f:
+        scaler: StandardScaler = pickle.load(f)
 
     # Transform the feature dataset
     logger.info("Transforming X features ... 🎭\n")
