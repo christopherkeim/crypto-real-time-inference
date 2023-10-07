@@ -102,12 +102,13 @@ if ( poetry --version > /dev/null )
 then
   echo "Poetry is already in PATH 🟢"
 else
-  touch ~/.poetryrc
-  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.poetryrc
-  echo -e "# Poetry Configuration\nexport POETRY_VIRTUALENVS_IN_PROJECT=true" >> ~/.poetryrc
-  echo -e "# Poetry Configuration File\nsource ~/.poetryrc" >> ~/.bashrc
-  source ~/.poetryrc
+  touch ~/.poetry
+  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.poetry
+  echo -e "\n# Poetry Configuration File\nsource ~/.poetry" >> ~/.profile
+  source ~/.poetry
 fi
+
+echo "New Path: $PATH"
 
 # Configure Poetry to put build all virtual environments in the project's directory
 if [ "$(poetry config virtualenvs.in-project)" == "true" ]
