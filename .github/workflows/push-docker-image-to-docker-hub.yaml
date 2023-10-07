@@ -1,7 +1,7 @@
-name: Push Docker Image to Docker Hub
+name: Build and Push Prediction Service to Docker Hub
 on:
   push:
-    branches: ["chris/build-dockerhub-pipeline"]
+    branches: ["chris/build-multi-chip-image-pipeline"]
 
 env:
   WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
@@ -13,6 +13,15 @@ env:
 
 jobs:
   push_to_registry:
+    strategy:
+      matrix:
+        target_platform: ["linux/amd64", "linux/arm/v8"]
+        include:
+          - target_platform: "linux/amd64"
+            platform_tag: "amd64"
+          - target_platform: "linux/arm/v8"
+            platform_tag: "arm64"
+
     runs-on: ubuntu-latest
 
     steps:
@@ -54,6 +63,12 @@ jobs:
       - name: Pull Models from Registry
         run: poetry run python deploy/download_models_from_wandb.py
 
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker-setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -64,6 +79,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: ${{ matrix.target_platform }}
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/predict:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/crypto-real-time-inference-${{ matrix.platform_tag }}:latest
