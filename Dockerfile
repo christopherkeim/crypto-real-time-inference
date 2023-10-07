@@ -6,7 +6,7 @@
 # Sets up all our environment variables
 ###############################################################
 
-FROM python:3.10-slim-buster as python-base
+FROM python:3.10-buster as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
@@ -45,8 +45,7 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
     curl \
     make \
     gcc \
-    pciutils \
-    build-essential
+    pciutils
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
