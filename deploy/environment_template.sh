@@ -16,5 +16,5 @@ then
 else
   echo "Setting WANDB_ENTITY environment variable 🔧"
   # Replace with your entity name
-  export WANDB_ENTITY="your-entity-name"
+  export WANDB_ENTITY="$1"
 fi

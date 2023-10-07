@@ -93,7 +93,7 @@ then
   echo "Poetry is already installed 🟢"
 else
   echo "Installing Poetry 🧙‍♂️"
-  curl -sSL https://install.python-poetry.org | python3 -
+  curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
 fi
 
 # Add Poetry to the path in the current user's .bashrc
@@ -153,6 +153,7 @@ then
 else
   echo "Installing Python3.10 🔧"
   sudo apt install -y python3.10
+  sudo apt-get install -y gcc python3.10-dev
 fi
 
 # Verify Python3.10 installation

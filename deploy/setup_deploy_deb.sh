@@ -102,7 +102,7 @@ then
   echo "Poetry is already in PATH 🟢"
 else
   echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  export PATH="/home/$USER/.local/bin:$PATH"
+  source ~/.bashrc
 fi
 
 # Configure Poetry to put build all virtual environments in the project's directory
@@ -142,11 +142,12 @@ then
   echo "Python3.10 already installed 🐍"
 else
   echo "Installing Python3.10 🔧"
+  sudo apt install -y build-essential
   curl https://www.python.org/ftp/python/3.10.8/Python-3.10.8.tgz --output Python-3.10.8.tgz
   tar xzf Python-3.10.8.tgz 
   pushd Python-3.10.8
   ./configure --enable-optimizations 
-  make altinstall 
+  sudo make altinstall 
   popd
 fi
 
