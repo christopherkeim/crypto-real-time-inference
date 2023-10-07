@@ -15,6 +15,7 @@
 # -----------------------------------------------------------------------------------------------------------
 
 # Check if ca-certificates is in the apt-cache
+# TODO: Find a way to check if ca-certificates is installed on Debian
 if ( apt-cache show ca-certificates > /dev/null )
 then
   echo "ca-certificates is already cached 🟢"
@@ -147,6 +148,7 @@ else
   tar xzf Python-3.10.8.tgz 
   pushd Python-3.10.8
   ./configure --enable-optimizations 
+  sudo make -j 4
   sudo make altinstall 
   popd
 fi
