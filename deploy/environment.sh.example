@@ -18,3 +18,12 @@ else
   # Replace with your entity name
   export WANDB_ENTITY="$1"
 fi
+
+# wandb API key
+if [ -n "$WANDB_API_KEY" ]
+then 
+  echo "WANDB_API_KEY already set."
+else
+  echo "Setting WANDB_API_KEY environment variable"
+  export WANDB_API_KEY="your-api-key"
+fi 
