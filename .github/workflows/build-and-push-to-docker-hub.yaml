@@ -1,7 +1,7 @@
 name: Build and Push Prediction Service to Docker Hub
 on:
   push:
-    branches: ["chris/build-multi-chip-image-pipeline"]
+    branches: ["main"]
 
 env:
   WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
