@@ -1,7 +1,5 @@
 name: CI
 on:
-  push:
-    branches: ["main"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -13,7 +11,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: python:3.10-slim-buster
+    container: python:3.10-buster
 
     steps:
       - name: Checkout
@@ -42,6 +40,3 @@ jobs:
 
       - name: Format
         run: make format
-
-      - name: Deploy
-        run: make deploy

@@ -6,7 +6,7 @@
 # Sets up all our environment variables
 ###############################################################
 
-FROM python:3.10-slim-buster as python-base
+FROM python:3.10-buster as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
@@ -41,7 +41,6 @@ FROM python-base as builder-base
 
 # Install system dependencies
 RUN apt-get update && apt-get -y install --no-install-recommends \
-    ffmpeg \ 
     curl \
     make \
     gcc \
@@ -55,7 +54,6 @@ WORKDIR /app/
 
 # Copy project pyproject.toml and poetry.lock here to ensure they'll be cached.
 COPY ./pyproject.toml .
-COPY ./poetry.lock .
 
 # Install runtime dependencies with Poetry - uses $POETRY_VIRTUALENVS_IN_PROJECT and
 # $POETRY_NO_INTERACTION 
