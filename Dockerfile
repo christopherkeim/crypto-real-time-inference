@@ -45,7 +45,8 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
     curl \
     make \
     gcc \
-    pciutils
+    pciutils \
+    build-essential
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
