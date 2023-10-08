@@ -102,13 +102,13 @@ You can curl the `http://0.0.0.0:8000/api/predict` endpoint or simply navigate t
 
 ### Prediction Service Containerization
 
-9. To build the prediction service into a Docker container, navigate to the root of this repository and run:
+1. To build the prediction service into a Docker container, navigate to the root of this repository and run:
 
 ```bash
 docker build -t crypto-real-time-inference:v0 .
 ```
 
-10. To start prediction service container, run:
+2. To start prediction service container, run:
 
 ```bash
 docker run -p 8000:8000 crypto-real-time-inference:v0
@@ -120,7 +120,7 @@ The containerized prediction service will serve predictions at `http://0.0.0.0:8
 
 ### Frontend Client Setup
 
-10. To setup the frontend client, navigate to the `frontend` directory and run:
+1. To setup the frontend client, navigate to the `frontend` directory and run:
 
 ```bash
 npm install
@@ -136,7 +136,7 @@ The default values in `.env.local` should work out of the box for local developm
 
 ### Frontend Client Development
 
-11. To start the frontend client development server, navigate to the `frontend` directory and run:
+2. To start the frontend client development server, navigate to the `frontend` directory and run:
 
 ```bash
 npm run dev
@@ -152,7 +152,7 @@ npm run next-dev
 
 ### Frontend Client Production Build
 
-12. To build the frontend client for production, navigate to the `frontend` directory and run:
+3. To build the frontend client for production, navigate to the `frontend` directory and run:
 
 ```bash
 npm run build
