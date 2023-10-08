@@ -98,11 +98,9 @@ make predict
 
 You can curl the `http://0.0.0.0:8000/api/predict` endpoint or simply navigate to that URL in your browser to garner predictions from your trained Convolutional Neural Network for the current next hour's price point (defaults)
 
-<details>
+## Prediction Backend 🧙‍♂️ 🔧
 
-<summary>Prediction Backend</summary>
-
-## Prediction Service Containerization
+### Prediction Service Containerization
 
 9. To build the prediction service into a Docker container, navigate to the root of this repository and run:
 
@@ -118,13 +116,9 @@ docker run -p 8000:8000 crypto-real-time-inference:v0
 
 The containerized prediction service will serve predictions at `http://0.0.0.0:8000/api/predict`.
 
-</details>
+## Frontend 🪅 ✨
 
-<details>
-
-<summary>Frontend</summary>
-
-## Frontend Client Setup
+### Frontend Client Setup
 
 10. To setup the frontend client, navigate to the `frontend` directory and run:
 
@@ -171,8 +165,6 @@ npm run start
 ```
 
 A great candidate for deployment is [Vercel](https://vercel.com), just make sure you set the `frontend` directory as the project directory after linking your repo. Other cloud providers will work as long as then call `npm run build` and `npm run start` in the root of the `frontend` directory.
-
-</details>
 
 ### More to come (see below)
 
