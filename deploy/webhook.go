@@ -28,8 +28,10 @@ func main() {
 				log.Fatal(err)
 			}
 			// Std ouput on server
-			fmt.Printf("Starting container upgrade 🚀")
+			fmt.Printf("Starting container upgrade 🐳")
 			fmt.Print(string(out))
+		} else {
+			fmt.Printf("Invalid deployment key 🔴\n")
 		}
 	}).Methods("POST")
 

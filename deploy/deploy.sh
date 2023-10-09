@@ -17,4 +17,4 @@ source ./deploy/environment.sh
 bash deploy/deploy_container.sh
 
 # Spin up the Webhook server
-deploy/webhook
+bash deploy/deploy_webhook.sh
