@@ -7,11 +7,11 @@
 
 
 # Docker Hub deploy key
-if [ -n "$DH_DEPLOY_KEY" ]
+if [ -n "$DOCKER_HUB_DEPLOY_KEY" ]
 then 
-  echo "DH_DEPLOY_KEY already set."
+  echo "DOCKER_HUB_DEPLOY_KEY already set 🔑"
 else
-  echo "Setting DH_DEPLOY_KEY environment variable 🔧"
+  echo "Setting DOCKER_HUB_DEPLOY_KEY environment variable 🔧"
   # Replace with your entity name
-  export DH_DEPLOY_KEY="your-deploy-key-here"
+  export DOCKER_HUB_DEPLOY_KEY="your-deploy-key-here"
 fi

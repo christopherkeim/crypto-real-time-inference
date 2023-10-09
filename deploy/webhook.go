@@ -20,7 +20,7 @@ func main() {
 		vars := mux.Vars(r)
 		deploy_key := vars["deploy_key"]
 
-		if deploy_key == os.Getenv("DH_DEPLOY_KEY") {
+		if deploy_key == os.Getenv("DOCKER_HUB_DEPLOY_KEY") {
 			// Execute the bash script
 			out, err := exec.Command("deploy/deploy_container.sh").Output()
 

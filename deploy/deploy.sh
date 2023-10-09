@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Modify DH_DEPLOY_KEY value in `environment.sh` (line 19) before running this script.
+# Modify DOCKER_HUB_DEPLOY_KEY value in `environment.sh` (line 19) before running this script.
 #
 # Deploys the crypto-real-time-inference application onto a Ubuntu or Debian-based
 # server.
