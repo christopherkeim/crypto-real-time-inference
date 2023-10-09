@@ -1,0 +1,9 @@
+services:
+  predict:
+    image: christopherkeim/crypto-real-time-inference-arm64:latest
+    restart: always
+    ports:
+      - 8000:8000
+
+# docker compose -f deploy/prediction-docker-compose.yml up --detach --pull predict
+# docker compose -f deploy/pred-docker-compose.yml down predict 
