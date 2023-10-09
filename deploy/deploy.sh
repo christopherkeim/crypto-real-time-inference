@@ -10,7 +10,7 @@
 # Setup the deployment environment
 bash deploy/setup_deploy_deb.sh
 
-# Set environment variables for model downloads
+# Set environment variables for deploy
 source ./deploy/environment.sh
 
 # Spin up the Prediction server
