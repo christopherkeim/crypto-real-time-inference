@@ -175,7 +175,7 @@ if ( -f deploy/webhook )
 then
   echo "webhook already built 🟢"
 else
-  echo "Build webhook from source 🦫"
+  echo "Building webhook 🦫"
   pushd crypto-real-time-inference/deploy
   go build
   popd
