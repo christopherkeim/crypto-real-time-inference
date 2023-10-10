@@ -27,6 +27,7 @@ uvicorn = "^0.23.2"
 # Data Science
 pandas = "^1.5.0"
 numpy = "^1.23.3"
+pyarrow = "^13.0.0"
 scikit-learn = "^1.1.2"
 matplotlib = "^3.6.0"
 seaborn = "^0.12.0"
@@ -56,6 +57,7 @@ tensorflow-io-gcs-filesystem = [
 
 # MLOps
 wandb = "^0.15.10"
+
 
 
 [tool.ruff]
