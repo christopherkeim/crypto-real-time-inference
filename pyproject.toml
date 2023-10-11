@@ -25,18 +25,16 @@ pydantic = "^2.3.0"
 uvicorn = "^0.23.2"
 
 # Data Science
-jupyter = "^1.0.0"
 pandas = "^1.5.0"
 numpy = "^1.23.3"
+pyarrow = "^13.0.0"
 scikit-learn = "^1.1.2"
 matplotlib = "^3.6.0"
 seaborn = "^0.12.0"
 ta = "^0.10.2"
 sktime = "^0.22.0"
-xgboost = "^1.7.6"
 lightgbm = "^4.0.0"
 keras = "^2.14.0"
-bokeh = "^3.2.2"
 
 # Issue between poetry and tensorflow metadata since >=2.11
 # This is a temporary workaround
@@ -59,6 +57,7 @@ tensorflow-io-gcs-filesystem = [
 
 # MLOps
 wandb = "^0.15.10"
+
 
 
 [tool.ruff]
