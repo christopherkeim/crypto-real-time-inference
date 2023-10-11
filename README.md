@@ -1,6 +1,8 @@
 [![CI][CI-BADGE]][CI-URL]
 [![Build and Push Prediction Service to Docker Hub][DOCKER-HUB-BADGE]][DOCKER-HUB-URL]
+
 ---
+
 ![Python Version][PYTHON-BADGE]
 ![Poetry][POETRY-BADGE]
 ![Ruff][RUFF-BADGE]
@@ -175,21 +177,13 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 ## In Progress 🔧💻
 
 - [x] Continuous Integration (CI)
-
 - [x] Minimum viable Data Extraction Web Scraper (CLI tool)
-
 - [x] Minimum viable Feature Engineering Pipeline
-
 - [x] Experiment tracking (Weight & Biases)
-
 - [x] Minimum viable Training Pipelines (ML & DL)
-
 - [x] Minimum viable Inference Pipeline (REST API)
-
 - [x] Continuous Delivery to Docker Hub (CD, `x86_64`, `arm64` targets)
-
 - [ ] Frontend
-
 - [x] Continuous deployment
 
 <!-- Links -->
