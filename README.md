@@ -1,17 +1,23 @@
-[![CI](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml)
-[![Build and Push Prediction Service to Docker Hub](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml/badge.svg)](https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml)
-![Python Version](https://img.shields.io/badge/python-3.10-blue.svg)
-![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)
-![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
-![W&B](https://img.shields.io/badge/Experiment%20Tracking-W%26B-yellow?labelColor=black&color=yellow)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-%23FF6F00.svg?style=flat&logo=TensorFlow&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)
-![Next JS](https://img.shields.io/badge/Next-black?style=flat&logo=next.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB)
-![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)
+[![CI][CI-BADGE]][CI-URL]
+[![Build and Push Prediction Service to Docker Hub][DOCKER-HUB-BADGE]][DOCKER-HUB-URL]
 
-# crypto-real-time-inference
+---
+
+![Python Version][PYTHON-BADGE]
+![Poetry][POETRY-BADGE]
+![Ruff][RUFF-BADGE]
+![W&B][W&B-BADGE]
+![TensorFlow][TENSORFLOW-BADGE]
+![FastAPI][FASTAPI-BADGE]
+![Next JS][NEXTJS-BADGE]
+![TypeScript][TYPESCRIPT-BADGE]
+![React][REACT-BADGE]
+![TailwindCSS][TAILWINDCSS-BADGE]
+![Go][GO-BADGE]
+
+&nbsp;
+
+# Crypto Real-Time Inference
 
 The aim of this application is to leverage historical Bitcoin price data and cutting-edge machine learning algorithms to serve inferences about Bitcoin's future price points within a 1 hour window, in real time.
 
@@ -171,19 +177,29 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 ## In Progress 🔧💻
 
 - [x] Continuous Integration (CI)
-
 - [x] Minimum viable Data Extraction Web Scraper (CLI tool)
-
 - [x] Minimum viable Feature Engineering Pipeline
-
 - [x] Experiment tracking (Weight & Biases)
-
 - [x] Minimum viable Training Pipelines (ML & DL)
-
 - [x] Minimum viable Inference Pipeline (REST API)
-
 - [x] Continuous Delivery to Docker Hub (CD, `x86_64`, `arm64` targets)
-
 - [ ] Frontend
+- [x] Continuous deployment
 
-- [ ] Continuous deployment
+<!-- Links -->
+
+[CI-BADGE]: https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml/badge.svg
+[CI-URL]: https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/ci.yaml
+[DOCKER-HUB-BADGE]: https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml/badge.svg
+[DOCKER-HUB-URL]: https://github.com/christopherkeim/crypto-real-time-inference/actions/workflows/build-and-push-to-docker-hub.yaml
+[PYTHON-BADGE]: https://img.shields.io/badge/python-3.10-blue.svg
+[POETRY-BADGE]: https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json
+[RUFF-BADGE]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+[W&B-BADGE]: https://img.shields.io/badge/Experiment%20Tracking-W%26B-yellow?labelColor=black&color=yellow
+[TENSORFLOW-BADGE]: https://img.shields.io/badge/TensorFlow-%23FF6F00.svg?style=flat&logo=TensorFlow&logoColor=white
+[FASTAPI-BADGE]: https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi
+[NEXTJS-BADGE]: https://img.shields.io/badge/Next-black?style=flat&logo=next.js&logoColor=white
+[TYPESCRIPT-BADGE]: https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white
+[REACT-BADGE]: https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB
+[TAILWINDCSS-BADGE]: https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white
+[GO-BADGE]: https://img.shields.io/badge/Go-%2300ADD8.svg?style=flat&logo=go&logoColor=white
