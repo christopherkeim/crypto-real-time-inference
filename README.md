@@ -1,10 +1,6 @@
 [![CI][CI-BADGE]][CI-URL]
 [![Build and Push Prediction Service to Docker Hub][DOCKER-HUB-BADGE]][DOCKER-HUB-URL]
-
 ---
-
-&nbsp;
-
 ![Python Version][PYTHON-BADGE]
 ![Poetry][POETRY-BADGE]
 ![Ruff][RUFF-BADGE]
@@ -15,6 +11,7 @@
 ![TypeScript][TYPESCRIPT-BADGE]
 ![React][REACT-BADGE]
 ![TailwindCSS][TAILWINDCSS-BADGE]
+![Go][GO-BADGE]
 
 &nbsp;
 
@@ -193,7 +190,7 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 
 - [ ] Frontend
 
-- [ ] Continuous deployment
+- [x] Continuous deployment
 
 <!-- Links -->
 
@@ -211,3 +208,4 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 [TYPESCRIPT-BADGE]: https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white
 [REACT-BADGE]: https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB
 [TAILWINDCSS-BADGE]: https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white
+[GO-BADGE]: https://img.shields.io/badge/Go-%2300ADD8.svg?style=flat&logo=go&logoColor=white
