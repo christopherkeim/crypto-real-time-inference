@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
+// This component is used to fade in elements on the page.
+// It uses the AOS library to do this.
+// It is implied that AOS is already installed and configured in the project.
 
-interface FadeAnimationProps {
+import React from "react";
+
+type FadeAnimationProps = {
   className?: string;
   fadeDirection?: "up" | "down" | "left" | "right";
   fadeDelay?: number;
   children?: React.ReactNode;
-}
+};
 
 export function FadeAnimation({
   className,
