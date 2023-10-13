@@ -29,7 +29,7 @@ export default function About() {
                       alt="Christopher Keim"
                       width={1609}
                       height={1457}
-                      className="min-h-[300px w-auto rounded-lg"
+                      className="min-h-[300px mb-4 w-auto rounded-lg"
                     />
                     <h3 className="h4 mb-12">
                       Machine Learning Engineer and Published Neuroscience
