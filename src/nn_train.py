@@ -61,11 +61,11 @@ def get_nn_model_from_name(
         raise NotImplementedError(f"{name} not implemented")
 
 
-def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
+def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     """
     Standardizes features by removing the mean and scaling to unit variance.
     """
-    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+    SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
@@ -190,7 +190,6 @@ def build_lstm_model(n_features: int) -> Sequential:
 
 def _save_loss_plot_locally(
     history: Dict,
-    model_name: str,
     title: str,
 ) -> None:
     """
@@ -217,14 +216,13 @@ def _save_loss_plot_locally(
 
     # Save the graph locally
     picture = loss_graph.get_figure()
-    picture.savefig(GRAPHS_DIR / f"{model_name}_{title}.jpeg", format="jpeg")
+    picture.savefig(GRAPHS_DIR / f"{title}.jpeg", format="jpeg")
 
 
 def _save_predictions_plot_locally(
     model: Sequential,
     X_set: pd.DataFrame,
     y_set: pd.Series,
-    model_name: str,
     title: str,
 ) -> None:
     """
@@ -249,7 +247,7 @@ def _save_predictions_plot_locally(
 
     # Save the graph locally
     picture = preds_graph.get_figure()
-    picture.savefig(GRAPHS_DIR / f"{model_name}_{title}.jpeg", format="jpeg")
+    picture.savefig(GRAPHS_DIR / f"{title}.jpeg", format="jpeg")
 
 
 def _create_wandb_predictions_table(
@@ -272,6 +270,7 @@ def _create_wandb_predictions_table(
 
 def train_nn_model(
     model_name: str,
+    product_id: str,
     X: pd.DataFrame,
     y: pd.Series,
     learning_rate: int = 0.001,
@@ -299,10 +298,12 @@ def train_nn_model(
         logger.info("Training on CPU...")
 
     # Define a model checkpoint to save our best models to
-    cp = ModelCheckpoint(str(MODELS_DIR / f"{model_name}_model/"), save_best_only=True)
+    cp = ModelCheckpoint(
+        str(MODELS_DIR / f"{product_id}_{model_name}_model/"), save_best_only=True
+    )
 
     # Train the neural network model
-    logger.info(f"Fitting {model_name} model on training data ... 👕\n")
+    logger.info(f"Fitting {model_name} model on {product_id} training data ... 👕\n")
     history = nn_model.fit(
         X_train,
         y_train,
@@ -313,10 +314,10 @@ def train_nn_model(
     )
 
     # load the best model from our checkpoint
-    best_model = load_model(str(MODELS_DIR / f"{model_name}_model/"))
+    best_model = load_model(str(MODELS_DIR / f"{product_id}_{model_name}_model/"))
 
     # Evaluate model and store its validation MAE and test MAE
-    logger.info(f"Evaluating {model_name} model... 🔎")
+    logger.info(f"Evaluating {product_id}_{model_name} model... 🔎")
     val_mae = evaluate(best_model, X_val, y_val)
     test_mae = evaluate(best_model, X_test, y_test)
     logger.info(f"Validation MAE: {val_mae} 🎯")
@@ -324,16 +325,25 @@ def train_nn_model(
 
     # Save graph of loss learning curve
     logger.info(f"Saving loss learning curve graph to {GRAPHS_DIR} 📉\n")
-    _save_loss_plot_locally(history=history, model_name=model_name, title="loss_curve")
+    _save_loss_plot_locally(
+        history=history,
+        title=f"{product_id}_{model_name}_loss_curve",
+    )
     logger.info("Learning curve successfully saved 🟢\n")
 
     # Save graphs of validation predictions and test predictions
     logger.info(f"Saving validation and test prediction graphs to {GRAPHS_DIR} 📈\n")
     _save_predictions_plot_locally(
-        best_model, X_val, y_val, model_name, title="validation_predictions"
+        best_model,
+        X_val,
+        y_val,
+        title=f"{product_id}_{model_name}_validation_predictions",
     )
     _save_predictions_plot_locally(
-        best_model, X_test, y_test, model_name, title="test_predictions"
+        best_model,
+        X_test,
+        y_test,
+        title=f"{product_id}_{model_name}_test_predictions",
     )
     logger.info("Graphs successfully saved 🟢\n")
 
@@ -350,22 +360,29 @@ def train_nn_model(
         run = wandb.init(
             project=os.environ["WANDB_PROJECT"],
             name="neural_net_training",
-            notes=f"Baseline for {model_name}_model",
-            tags=["baseline", f"{model_name}_model"],
+            notes=f"Baseline for {product_id}_{model_name}_model",
+            tags=["baseline", f"{product_id}_{model_name}_model"],
             config=config,
         )
-        model_artifact = wandb.Artifact(f"{model_name}_model", type="model")
+        model_artifact = wandb.Artifact(
+            f"{product_id}_{model_name}_model", type="model"
+        )
         # Upload model
         model_artifact.add_dir(
-            local_path=(MODELS_DIR / f"{model_name}_model"), name=f"{model_name}_model"
+            local_path=(MODELS_DIR / f"{product_id}_{model_name}_model"),
+            name=f"{product_id}_{model_name}_model",
         )
         # Upload loss curve JPEG
-        model_artifact.add_file(GRAPHS_DIR / f"{model_name}_loss_curve.jpeg")
+        model_artifact.add_file(
+            GRAPHS_DIR / f"{product_id}_{model_name}_loss_curve.jpeg"
+        )
         # Upload test predictions JPEG
-        model_artifact.add_file(GRAPHS_DIR / f"{model_name}_test_predictions.jpeg")
+        model_artifact.add_file(
+            GRAPHS_DIR / f"{product_id}_{model_name}_test_predictions.jpeg"
+        )
         # Upoload validation predictions JPEG
         model_artifact.add_file(
-            GRAPHS_DIR / f"{model_name}_validation_predictions.jpeg"
+            GRAPHS_DIR / f"{product_id}_{model_name}_validation_predictions.jpeg"
         )
         # Log the version
         run.log_artifact(model_artifact, aliases=["latest", "best"])
@@ -376,7 +393,7 @@ def train_nn_model(
             model=best_model,
             X_set=X_val,
             y_set=y_val,
-            title=f"{model_name}_model_validation_predictions_table",
+            title=f"{product_id}_{model_name}_model_validation_predictions_table",
         )
         # Test predictions wandb table
         _create_wandb_predictions_table(
@@ -384,13 +401,13 @@ def train_nn_model(
             model=best_model,
             X_set=X_test,
             y_set=y_test,
-            title=f"{model_name}_model_test_predictions_table",
+            title=f"{product_id}_{model_name}_model_test_predictions_table",
         )
         # Log error metrics for validation and test
         run.log(
             {
-                f"{model_name}_val_mean_average_error": val_mae,
-                f"{model_name}_test_mean_average_error": test_mae,
+                f"{product_id}_{model_name}_val_mean_average_error": val_mae,
+                f"{product_id}_{model_name}_test_mean_average_error": test_mae,
             }
         )
         wandb.finish()
@@ -477,10 +494,12 @@ def nn_training_pipeline(
 
     # Scale our X dataset
     logger.info("Scaling X features ... 👉 👈\n")
-    X: pd.DataFrame = generate_scaled_features(X)
+    X: pd.DataFrame = generate_scaled_features(X, product_id)
 
     # Train the model
-    train_nn_model(model_name, X, y, epochs=epochs, batch_size=batch_size, track=track)
+    train_nn_model(
+        model_name, product_id, X, y, epochs=epochs, batch_size=batch_size, track=track
+    )
 
 
 if __name__ == "__main__":
