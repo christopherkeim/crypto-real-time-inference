@@ -5,7 +5,7 @@ export const metadata = {
 
 import Image from "next/image";
 import ChristopherKeim from "@/public/images/christopher_keim.jpg";
-
+import { FadeAnimation } from "@/components/ui/FadeAnimation";
 import { Education } from "@/components/About/Education";
 import { Experience } from "@/components/About/Experience";
 import { WidgetSkills } from "@/components/About/WidgetSkills";
@@ -22,24 +22,30 @@ export default function About() {
               <div className="max-w-[700px]">
                 <section>
                   {/* Page title */}
-                  <h2 className="h2 mb-4">Christopher Keim</h2>
-                  <div className="relative mb-4 flex min-h-[500px] min-w-full shrink-0 grow overflow-hidden">
-                    <Image
-                      src={ChristopherKeim}
-                      alt="Christopher Keim"
-                      fill
-                      className="h-full w-full rounded-lg"
-                      style={{ objectFit: "cover", objectPosition: "center" }}
-                    />
-                  </div>
-                  <h3 className="h4 mb-12">
-                    Machine Learning Engineer and Published Neuroscience
-                    Researcher
-                  </h3>
+                  <FadeAnimation>
+                    <h2 className="h2 mb-4">Christopher Keim</h2>
+                    <div className="relative mb-4 flex min-h-[500px] min-w-full shrink-0 grow overflow-hidden">
+                      <Image
+                        src={ChristopherKeim}
+                        alt="Christopher Keim"
+                        fill
+                        className="h-full w-full rounded-lg"
+                        style={{ objectFit: "cover", objectPosition: "center" }}
+                      />
+                    </div>
+                    <h3 className="h4 mb-12">
+                      Machine Learning Engineer and Published Neuroscience
+                      Researcher
+                    </h3>
+                  </FadeAnimation>
                   {/* Page content */}
                   <div className="space-y-12 text-slate-500 dark:text-slate-400">
-                    <Education />
-                    <Experience />
+                    <FadeAnimation>
+                      <Education />
+                    </FadeAnimation>
+                    <FadeAnimation>
+                      <Experience />
+                    </FadeAnimation>
                   </div>
                 </section>
               </div>
@@ -48,8 +54,12 @@ export default function About() {
             {/* Right sidebar */}
             <aside className="shrink-0 md:w-[240px] lg:w-[300px]">
               <div className="space-y-6">
-                <WidgetSkills />
-                <WidgetCertifications />
+                <FadeAnimation fadeDelay={200}>
+                  <WidgetSkills />
+                </FadeAnimation>
+                <FadeAnimation fadeDelay={400}>
+                  <WidgetCertifications />
+                </FadeAnimation>
               </div>
             </aside>
           </div>
