@@ -11,16 +11,19 @@ from src.paths import MODELS_DIR
 logger = get_console_logger("model_downloads")
 
 
-def download_model_from_wandb(model_name: str) -> None:
+def download_model_from_wandb(product_id: str, model_name: str) -> None:
     """
     Fetches and downloads a specified model from the W&B backend.
     """
-    logger.info(f"Fetching {model_name}_model from W&B backend ✨")
+    logger.info(f"Fetching {product_id}_{model_name}_model from W&B backend ✨")
 
     run = wandb.init()
     # Fetch the model using the Public API
+    model_url: str = f"{os.environ['WANDB_ENTITY']}/model-registry/"
+    model_url += f"{product_id}_{model_name}_model:latest"
+
     reg_model = wandb.use_artifact(
-        f"{os.environ['WANDB_ENTITY']}/model-registry/{model_name}_model:latest",
+        model_url,
         type="model",
     )
     # Download the model to disk
@@ -32,28 +35,48 @@ def download_model_from_wandb(model_name: str) -> None:
 
 @click.command()
 @click.option(
-    "--selection",
-    "-s",
+    "--coin-selection",
+    "-c",
+    type=str,
+    default="all",
+    show_default=True,
+    help="'all' 'bitcoin', or 'ethereum'",
+)
+@click.option(
+    "--model-selection",
+    "-m",
     type=str,
     default="all",
     show_default=True,
     help="'all' 'nn', or 'ml'",
 )
-def download_latest_models_from_wandb(selection: str = "all") -> None:
+def download_latest_models_from_wandb(
+    coin_selection: str = "all",
+    model_selection: str = "all",
+) -> None:
     """
-    Takes a selection value ("all", "nn", or "ml") and downloads the latest
-    model versions from W&B.
+    Takes a coin selection value ("all", "bitcoin", "ethereum" and a model
+    selection value ("all", "nn", or "ml") and downloads the latest model
+    versions from W&B.
     """
+    COINS: Dict[str, List[str]] = {
+        "all": ["BTC-USD", "ETH-USD"],
+        "bitcoin": ["BTC-USD"],
+        "ethereum": ["ETH-USD"],
+    }
+
     MODELS: Dict[str, List[str]] = {
         "all": ["cnn", "lasso", "X_scaler"],
         "nn": ["cnn", "X_Scaler"],
         "ml": ["lasso", "X_scaler"],
     }
 
-    logger.info(f"Beginning download process for model selection: {selection} 🤖")
+    logger.info(f"Beginning download process for model selection: {model_selection} 🤖")
+    logger.info(f"and coin selection: {coin_selection} 🪙\n")
 
-    for model in MODELS[selection]:
-        download_model_from_wandb(model)
+    for coin in COINS[coin_selection]:
+        for model in MODELS[model_selection]:
+            download_model_from_wandb(coin, model)
 
     logger.info("Models successfully downloaded 🟢")
 
