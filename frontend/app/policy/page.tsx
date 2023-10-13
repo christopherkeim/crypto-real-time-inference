@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "Policy - Crypto Real-Time Inference",
+  description: "Policy page for Crypto Real-Time Inference App.",
+};
+
 import FadeAnimation from "@/components/ui/FadeAnimation";
 
 export default function page() {

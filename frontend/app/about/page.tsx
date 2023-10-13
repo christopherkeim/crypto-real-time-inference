@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "About - Appy",
-  description: "Page description",
+  title: "About - Christopher Keim",
+  description: "About page for Machine Learning Engineer Christopher Keim",
 };
 
 import Image from "next/image";
