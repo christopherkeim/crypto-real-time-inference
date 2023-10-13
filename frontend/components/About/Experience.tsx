@@ -22,7 +22,7 @@ export function Experience() {
               />
             </div>
             <div className="space-y-1 pl-20">
-              <div className="text-xs uppercase text-slate-500">
+              <div className="text-xs uppercase text-slate-900 dark:text-slate-500">
                 Aug 2023{" "}
                 <span className="text-slate-400 dark:text-slate-600">·</span>{" "}
                 Present
@@ -33,7 +33,7 @@ export function Experience() {
               <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
                 Underdog Devs
               </div>
-              <ul className="text-sm text-slate-500 dark:text-slate-400">
+              <ul className="text-sm text-slate-900 dark:text-slate-400">
                 <li className="mb-1 flex">
                   <span className="mr-2">-</span> Paid full-time apprenticeship
                   in intensive software engineering preparatory program
@@ -64,7 +64,7 @@ export function Experience() {
               />
             </div>
             <div className="space-y-1 pl-20">
-              <div className="text-xs uppercase text-slate-500">
+              <div className="text-xs uppercase text-slate-900 dark:text-slate-500">
                 May 2023{" "}
                 <span className="text-slate-400 dark:text-slate-600">·</span>{" "}
                 Present
@@ -75,7 +75,7 @@ export function Experience() {
               <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
                 Relative Path
               </div>
-              <ul className="text-sm text-slate-500 dark:text-slate-400">
+              <ul className="text-sm text-slate-900 dark:text-slate-400">
                 <li className="mb-1 flex">
                   <span className="mr-2">-</span> Implemented CI/CD pipeline for
                   relativepath.tech
@@ -100,7 +100,7 @@ export function Experience() {
               </svg>
             </div>
             <div className="space-y-1 pl-20">
-              <div className="text-xs uppercase text-slate-500">
+              <div className="text-xs uppercase text-slate-900 dark:text-slate-500">
                 Jan 2022{" "}
                 <span className="text-slate-400 dark:text-slate-600">·</span>{" "}
                 Aug 2023
@@ -111,7 +111,7 @@ export function Experience() {
               <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
                 Self - Projects
               </div>
-              <ul className="text-sm text-slate-500 dark:text-slate-400">
+              <ul className="text-sm text-slate-900 dark:text-slate-400">
                 <li className="mb-1 flex">
                   <span className="mr-2">-</span> Twitter Sentiment Analysis: DL
                   development of a LSTM neural network for sentiment analysis on
@@ -143,7 +143,7 @@ export function Experience() {
               </svg>
             </div>
             <div className="space-y-1 pl-20">
-              <div className="text-xs uppercase text-slate-500">
+              <div className="text-xs uppercase text-slate-900 dark:text-slate-500">
                 Aug 2015{" "}
                 <span className="text-slate-400 dark:text-slate-600">·</span>{" "}
                 May 2018
@@ -154,19 +154,18 @@ export function Experience() {
               <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
                 Bouton Laboratory of Learning and Memory
               </div>
-              <ul className="text-sm text-slate-500 dark:text-slate-400">
-                <li className="mb-1 flex">
+              <div className="text-sm text-slate-900 dark:text-slate-400">
+                <p>
                   <span className="mr-2">-</span> Published co-author in
-                  experiment series establishing
+                  experiment series establishing{" "}
                   <a
-                    className="whitespace-pre text-sky-800"
                     href="https://onlinelibrary.wiley.com/doi/abs/10.1002/jeab.446"
+                    className="text-sky-800"
                   >
-                    {" "}
-                    learning process&#39;s effect in addiction
+                    learning process's effect in addiction
                   </a>
-                </li>
-              </ul>
+                </p>
+              </div>
             </div>
           </div>
         </li>
@@ -174,12 +173,3 @@ export function Experience() {
     </section>
   );
 }
-
-//     Research Assistant - Bouton Laboratory of Learning and Memory Aug 2015
-//     -May 2018 ● Published co-author in experiment series establishing
-//     learning process&#39;s effect in addiction (
-//     <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/jeab.446">
-//       https://onlinelibrary.wiley.com/doi/abs/10.1002/jeab.446
-//     </a>
-//     ){" "}
-//   </p>
