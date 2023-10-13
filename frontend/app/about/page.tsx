@@ -3,11 +3,9 @@ export const metadata = {
   description: "Page description",
 };
 
-// import Hero from "@/components/hero-about";
-// import FeaturesGallery from "@/components/features-gallery";
-// import Timeline from "@/components/timeline";
-// import Career from "@/components/career";
-// import Team from "@/components/team";
+import Image from "next/image";
+import ChristopherKeim from "@/public/images/christopher_keim.jpg";
+
 import { Education } from "@/components/About/Education";
 import { Experience } from "@/components/About/Experience";
 import { WidgetSkills } from "@/components/About/WidgetSkills";
@@ -24,7 +22,16 @@ export default function About() {
               <div className="max-w-[700px]">
                 <section>
                   {/* Page title */}
-                  <h2 className="h2 mb-2">Christopher Keim</h2>
+                  <h2 className="h2 mb-4">Christopher Keim</h2>
+                  <div className="relative mb-4 flex min-h-[500px] min-w-full shrink-0 grow overflow-hidden">
+                    <Image
+                      src={ChristopherKeim}
+                      alt="Christopher Keim"
+                      fill
+                      className="h-full w-full rounded-lg"
+                      style={{ objectFit: "cover", objectPosition: "center" }}
+                    />
+                  </div>
                   <h3 className="h4 mb-12">
                     Machine Learning Engineer and Published Neuroscience
                     Researcher
@@ -33,8 +40,6 @@ export default function About() {
                   <div className="space-y-12 text-slate-500 dark:text-slate-400">
                     <Education />
                     <Experience />
-                    {/* <Awards />
-              <Recommendations /> */}
                   </div>
                 </section>
               </div>
@@ -53,28 +58,3 @@ export default function About() {
     </div>
   );
 }
-// <section>
-//   <h2 id="christopher-keim-tiny-circle-photo-from-bottom-">
-//     Christopher Keim [tiny circle photo from bottom]
-//   </h2>
-//   <h3 id="interested-in-data-science-machine-learning-devops-and-backend-roles-">
-//     Interested in <strong>Data Science</strong>,{" "}
-//     <strong>Machine Learning</strong>, <strong>DevOps</strong> and{" "}
-//     <strong>Backend</strong> roles.
-//   </h3>
-//   <h3 id="self-taught-machine-learning-engineer-and-published-neuroscience-researcher-">
-//     Self-taught Machine Learning Engineer and published Neuroscience
-//     researcher.
-//   </h3>
-//
-
-//     Open to remote work. Willing to Relocate to: New York City, San
-//     Francisco Bay Area Authorized to work in the US
-//   </p>
-
-//   {/* <Hero />
-//   <FeaturesGallery />
-//   <Timeline />
-//   <Career />
-//   <Team /> */}
-// </section>
