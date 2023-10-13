@@ -12,7 +12,7 @@ export function WidgetSkills() {
           </div>
           <ProgressBar
             className="w-60 shrink-0 sm:w-80 md:w-20 lg:w-24"
-            value="advanced"
+            value={90}
           />
         </li>
         <li className="flex items-center justify-between">
@@ -22,7 +22,7 @@ export function WidgetSkills() {
           </div>
           <ProgressBar
             className="w-60 shrink-0 sm:w-80 md:w-20 lg:w-24"
-            value="intermediate"
+            value={60}
           />
         </li>
         <li className="flex items-center justify-between">
@@ -32,7 +32,7 @@ export function WidgetSkills() {
           </div>
           <ProgressBar
             className="w-60 shrink-0 sm:w-80 md:w-20 lg:w-24"
-            value="intermediate"
+            value={60}
           />
         </li>
         <li className="flex items-center justify-between">
@@ -42,7 +42,7 @@ export function WidgetSkills() {
           </div>
           <ProgressBar
             className="w-60 shrink-0 sm:w-80 md:w-20 lg:w-24"
-            value="intermediate"
+            value={60}
           />
         </li>
         <li className="flex items-center justify-between">
@@ -52,7 +52,7 @@ export function WidgetSkills() {
           </div>
           <ProgressBar
             className="w-60 shrink-0 sm:w-80 md:w-20 lg:w-24"
-            value="beginner"
+            value={25}
           />
         </li>
       </ul>
