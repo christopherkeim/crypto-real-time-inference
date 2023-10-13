@@ -23,16 +23,14 @@ export default function About() {
                 <section>
                   {/* Page title */}
                   <FadeAnimation>
-                    <h2 className="h2 mb-4">Christopher Keim</h2>
-                    <div className="relative mb-4 flex min-h-[500px] min-w-full shrink-0 grow overflow-hidden">
-                      <Image
-                        src={ChristopherKeim}
-                        alt="Christopher Keim"
-                        fill
-                        className="h-full w-full rounded-lg"
-                        style={{ objectFit: "cover", objectPosition: "center" }}
-                      />
-                    </div>
+                    <h2 className="h2 mb-4 text-center">Christopher Keim</h2>
+                    <Image
+                      src={ChristopherKeim}
+                      alt="Christopher Keim"
+                      width={1609}
+                      height={1457}
+                      className="min-h-[300px w-auto rounded-lg"
+                    />
                     <h3 className="h4 mb-12">
                       Machine Learning Engineer and Published Neuroscience
                       Researcher
