@@ -95,7 +95,7 @@ def get_prediction(
 
     # Calculate the predicted difference
     predicted_difference: float = price_next_hour - raw_data["close"].values[0]
-    sign: str = "+" if predicted_difference > 0 else "-"
+    sign: str = "+" if predicted_difference > 0 else ""
 
     # Construction the Prediction response
     r: PredictionResult = PredictionResult(

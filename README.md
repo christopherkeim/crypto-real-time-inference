@@ -114,7 +114,7 @@ You can curl the `http://0.0.0.0:8000/api/predict` endpoint or simply navigate t
 docker build -t crypto-real-time-inference:v0 .
 ```
 
-2. To start prediction service container, run:
+2. To start prediction the service container, run:
 
 ```bash
 docker run -p 8000:8000 crypto-real-time-inference:v0
@@ -184,7 +184,7 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 - [x] Minimum viable Inference Pipeline (REST API)
 - [x] Continuous Delivery to Docker Hub (CD, `x86_64`, `arm64` targets)
 - [ ] Frontend
-- [x] Continuous deployment
+- [x] Continuous Deployment
 
 <!-- Links -->
 

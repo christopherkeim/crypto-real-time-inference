@@ -55,7 +55,7 @@ def download_latest_models_from_wandb(
     model_selection: str = "all",
 ) -> None:
     """
-    Takes a coin selection value ("all", "bitcoin", "ethereum" and a model
+    Takes a coin selection value ("all", "bitcoin", "ethereum") and a model
     selection value ("all", "nn", or "ml") and downloads the latest model
     versions from W&B.
     """
