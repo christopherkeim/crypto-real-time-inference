@@ -4,7 +4,7 @@ Backend server for inference service.
 from typing import Dict
 from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 import uvicorn
 import pandas as pd
@@ -73,8 +73,10 @@ def get_prediction(
       time_from (str): The datetime hour to predict price point in +1 hour from
       model_name (str): Name of model
     """
-    request_timestamp: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    # Calculate UTC request timestamp
+    request_timestamp: str = str(int(datetime.now(timezone.utc).timestamp() * 1000))
 
+    # Compute datetime hour for prediction
     if time_from == "now":
         time_from = datetime.now().strftime("%Y-%m-%dT%H")
     else:
@@ -99,6 +101,11 @@ def get_prediction(
     predicted_difference: float = price_next_hour - raw_data["close"].values[0]
     sign: str = "+" if predicted_difference > 0 else ""
 
+    # Calculate UNIX timestamp for time_from
+    unix_time_from: str = str(
+        int(datetime.strptime(time_from, "%Y-%m-%dT%H").timestamp() * 1000)
+    )
+
     # Construction the Prediction response
     r: PredictionResult = PredictionResult(
         model=model_name,
@@ -106,7 +113,7 @@ def get_prediction(
         current_price=f"{raw_data['close'].values[0]:.2f}",
         prediction=f"{price_next_hour:.2f}",
         difference=f"{sign}{predicted_difference:.2f}",
-        time=time_from,
+        time=unix_time_from,
         request_timestamp=request_timestamp,
     )
 
