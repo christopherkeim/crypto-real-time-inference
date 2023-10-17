@@ -31,6 +31,7 @@ class PredictionResult(BaseModel):
     prediction: str
     difference: str
     time: str
+    request_timestamp: str
 
 
 class Coin(str, Enum):
@@ -72,6 +73,7 @@ def get_prediction(
       time_from (str): The datetime hour to predict price point in +1 hour from
       model_name (str): Name of model
     """
+    request_timestamp: str = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     if time_from == "now":
         time_from = datetime.now().strftime("%Y-%m-%dT%H")
@@ -105,6 +107,7 @@ def get_prediction(
         prediction=f"{price_next_hour:.2f}",
         difference=f"{sign}{predicted_difference:.2f}",
         time=time_from,
+        request_timestamp=request_timestamp,
     )
 
     # Return it as a JSON object
