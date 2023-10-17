@@ -48,11 +48,11 @@ def get_model_constructor_from_name(name: str) -> Callable:
         raise NotImplementedError(f"{name} not implemented")
 
 
-def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
+def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     """
     Standardizes features by removing the mean and scaling to unit variance.
     """
-    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+    SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
@@ -155,7 +155,7 @@ def evaluate(model: Callable, X_set: pd.DataFrame, y_set: pd.Series) -> float:
 
 
 def _save_predictions_plot_locally(
-    model: Callable, X_set: pd.DataFrame, y_set: pd.Series, model_name: str, title: str
+    model: Callable, X_set: pd.DataFrame, y_set: pd.Series, title: str
 ) -> None:
     """
     Plots a given models predictions on an X_set and y_set and saves
@@ -181,7 +181,7 @@ def _save_predictions_plot_locally(
 
     # Save the graph locally
     picture = preds_graph.get_figure()
-    picture.savefig(GRAPHS_DIR / f"{model_name}_{title}.jpeg", format="jpeg")
+    picture.savefig(GRAPHS_DIR / f"{title}.jpeg", format="jpeg")
 
 
 def _create_wandb_predictions_table(
@@ -203,9 +203,10 @@ def _create_wandb_predictions_table(
 
 
 def train(
+    model_name: str,
+    product_id: str,
     X: pd.DataFrame,
     y: pd.Series,
-    model_name: str = "lasso",
     tune_hyperparameters: bool = False,
     track: bool = False,
 ) -> None:
@@ -257,30 +258,36 @@ def train(
         config = {"default": True}
 
     # Train the model
-    logger.info(f"Fitting {model_name} model on training data ... 👕\n")
+    logger.info(f"Fitting {model_name} model on {product_id} training data ... 👕\n")
     model.fit(X_train, y_train)
 
     # Evaluate model and store its validation MAE and test MAE
-    logger.info(f"Evaluating {model_name} model... 🔎")
+    logger.info(f"Evaluating {product_id}_{model_name} model... 🔎")
     val_mae = evaluate(model, X_val, y_val)
     test_mae = evaluate(model, X_test, y_test)
     logger.info(f"Validation MAE: {val_mae} 🎯")
     logger.info(f"Test MAE: {test_mae} 🎯\n")
 
     # Save model to disk
-    logger.info(f"Saving {model_name} model to {MODELS_DIR}\n")
-    with open(MODELS_DIR / f"{model_name}_model.pkl", "wb") as f:
+    logger.info(f"Saving {product_id}_{model_name} model to {MODELS_DIR}\n")
+    with open(MODELS_DIR / f"{product_id}_{model_name}_model.pkl", "wb") as f:
         pickle.dump(model, f)
-    logger.info(f"{model_name} model successfully saved to: ")
-    logger.info(f"\t {MODELS_DIR} / {model_name}_model.pkl\n")
+    logger.info(f"{product_id}_{model_name} model successfully saved to: ")
+    logger.info(f"\t {MODELS_DIR} / {product_id}_{model_name}_model.pkl\n")
 
     # Save graphs of validation predictions and test predictions
     logger.info(f"Saving validation and test prediction graphs to {GRAPHS_DIR} 📈\n")
     _save_predictions_plot_locally(
-        model, X_val, y_val, model_name, title="validation_predictions"
+        model,
+        X_val,
+        y_val,
+        title=f"{product_id}_{model_name}_validation_predictions",
     )
     _save_predictions_plot_locally(
-        model, X_test, y_test, model_name, title="test_predictions"
+        model,
+        X_test,
+        y_test,
+        title=f"{product_id}_{model_name}_test_predictions",
     )
     logger.info("Graphs successfully saved 🟢\n")
 
@@ -290,20 +297,25 @@ def train(
         run = wandb.init(
             project=os.environ["WANDB_PROJECT"],
             name="model_training",
-            notes=f"Baseline for {model_name}_model",
-            tags=["baseline", f"{model_name}_model"],
+            notes=f"Baseline for {product_id}_{model_name}_model",
+            tags=["baseline", f"{product_id}_{model_name}_model"],
             config=config,
         )
-        model_artifact = wandb.Artifact(f"{model_name}_model", type="model")
+        model_artifact = wandb.Artifact(
+            f"{product_id}_{model_name}_model", type="model"
+        )
         # Upload model
         model_artifact.add_file(
-            MODELS_DIR / f"{model_name}_model.pkl", f"{model_name}_model.pkl"
+            MODELS_DIR / f"{product_id}_{model_name}_model.pkl",
+            f"{product_id}_{model_name}_model.pkl",
         )
         # Upload test predictions JPEG
-        model_artifact.add_file(GRAPHS_DIR / f"{model_name}_test_predictions.jpeg")
+        model_artifact.add_file(
+            GRAPHS_DIR / f"{product_id}_{model_name}_test_predictions.jpeg"
+        )
         # Upoload validation predictions JPEG
         model_artifact.add_file(
-            GRAPHS_DIR / f"{model_name}_validation_predictions.jpeg"
+            GRAPHS_DIR / f"{product_id}_{model_name}_validation_predictions.jpeg"
         )
         # Log the version
         if model_is_best:
@@ -316,7 +328,7 @@ def train(
             model=model,
             X_set=X_val,
             y_set=y_val,
-            title=f"{model_name}_model_validation_predictions_table",
+            title=f"{product_id}_{model_name}_model_validation_predictions_table",
         )
         # Test predictions wandb table
         _create_wandb_predictions_table(
@@ -324,13 +336,13 @@ def train(
             model=model,
             X_set=X_test,
             y_set=y_test,
-            title=f"{model_name}_model_test_predictions_table",
+            title=f"{product_id}_{model_name}_model_test_predictions_table",
         )
         # Log error metrics for validation and test
         run.log(
             {
-                f"{model_name}_val_mean_average_error": val_mae,
-                f"{model_name}_test_mean_average_error": test_mae,
+                f"{product_id}_{model_name}_val_mean_average_error": val_mae,
+                f"{product_id}_{model_name}_test_mean_average_error": test_mae,
             }
         )
         wandb.finish()
@@ -404,10 +416,12 @@ def training_pipeline(
 
     # Scale our X dataset
     logger.info("Scaling X features ... 👉 👈\n")
-    X: pd.DataFrame = generate_scaled_features(X)
+    X: pd.DataFrame = generate_scaled_features(X, product_id)
 
     # Train the model
-    train(X, y, model_name, tune_hyperparameters=tune_hyperparams, track=track)
+    train(
+        model_name, product_id, X, y, tune_hyperparameters=tune_hyperparams, track=track
+    )
 
 
 if __name__ == "__main__":

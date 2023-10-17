@@ -27,37 +27,37 @@ from src.paths import MODELS_DIR
 logger = get_console_logger("model_inference")
 
 
-def load_ml_model_from_name(model_name: str) -> Callable:
+def load_ml_model_from_name(model_name: str, product_id: str) -> Callable:
     """
     Takes an input name and returns a model.
     """
-    MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model.pkl"
+    MODEL_PATH: Path = MODELS_DIR / f"{product_id}_{model_name}_model.pkl"
 
     # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        raise NotImplementedError(f"{model_name}_model not found 🔴")
+        raise NotImplementedError(f"{product_id}_{model_name}_model not found 🔴")
 
-    logger.info(f"Loading {model_name}_model.pkl ...")
+    logger.info(f"Loading {product_id}_{model_name}_model.pkl ...")
 
     # Load the model into memory
-    with open(MODELS_DIR / f"{model_name}_model.pkl", mode="rb") as f:
+    with open(MODELS_DIR / f"{product_id}_{model_name}_model.pkl", mode="rb") as f:
         ml_model = pickle.load(f)
-    logger.info(f"{model_name} successfully loaded 🟢")
+    logger.info(f"{product_id}_{model_name} successfully loaded 🟢")
 
     return ml_model
 
 
-def load_nn_model_from_name(model_name: str) -> Sequential:
+def load_nn_model_from_name(model_name: str, product_id: str) -> Sequential:
     """
     Takes an input name and returns a model.
     """
-    MODEL_PATH: Path = MODELS_DIR / f"{model_name}_model"
+    MODEL_PATH: Path = MODELS_DIR / f"{product_id}_{model_name}_model"
 
     # Validate that the model exists locally
     if not MODEL_PATH.exists():
-        raise NotImplementedError(f"{model_name}_model not found 🔴")
+        raise NotImplementedError(f"{product_id}_{model_name}_model not found 🔴")
 
-    logger.info(f"Loading {model_name}_model ...")
+    logger.info(f"Loading {product_id}_{model_name}_model ...")
 
     # Load the model into memory
     nn_model = load_model(str(MODEL_PATH))
@@ -90,18 +90,18 @@ def download_data_for_t_hours(
     )
 
 
-def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
+def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     """
     Standardizes features by removing the mean and scaling to unit variance.
     """
-    SCALER_PATH: Path = MODELS_DIR / "X_scaler_model.pkl"
+    SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
     column_order: List[str] = list(X.columns)
 
     # Validate that the scaler model exists locally
     if not SCALER_PATH.exists():
-        raise NotImplementedError("X_scaler_model not found 🔴")
+        raise NotImplementedError(f"{product_id}_X_scaler_model not found 🔴")
 
     # Load the scaler from disk
     logger.info(f"Loading X_scaler_model from: {SCALER_PATH} ...\n")
@@ -120,7 +120,10 @@ def generate_scaled_features(X: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_feature_row_for_prediction(
-    raw_ts_data: pd.DataFrame, window_seq_len: int = 24, step_size: int = 1
+    raw_ts_data: pd.DataFrame,
+    product_id: str,
+    window_seq_len: int = 24,
+    step_size: int = 1,
 ) -> pd.DataFrame:
     """
     This function ingests a raw candle, generates features for that
@@ -177,13 +180,14 @@ def get_feature_row_for_prediction(
     X = feature_engineering_pipeline.transform(features_df)
 
     # Scale the full feature row
-    X: pd.DataFrame = generate_scaled_features(X)
+    X: pd.DataFrame = generate_scaled_features(X, product_id)
 
     return X
 
 
 def predict(
     feature_row: pd.DataFrame,
+    product_id: str,
     model_name: str = "cnn",
 ) -> float:
     """
@@ -196,14 +200,14 @@ def predict(
 
     if model_type == "nn":
         # Load neural network model into memory
-        model = load_nn_model_from_name(model_name)
+        model = load_nn_model_from_name(model_name, product_id)
 
         # Predict the next hour's price
         price_next_hour: float = model.predict(feature_row).flatten()[0]
 
     elif model_type == "ml":
         # Load machine learning model into memory
-        model = load_ml_model_from_name(model_name)
+        model = load_ml_model_from_name(model_name, product_id)
 
         # Predict the next hour's price
         price_next_hour: float = model.predict(feature_row)[0]

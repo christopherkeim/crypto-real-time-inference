@@ -2,11 +2,10 @@
 
 
 ###############################################################
-# PYTHON-BASE
-# Sets up all our environment variables
+# Set up all our environment variables
 ###############################################################
 
-FROM python:3.10-buster as python-base
+FROM python:3.10-buster
 
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
@@ -32,14 +31,10 @@ ENV PYTHONUNBUFFERED=1 \
 # Prepend Poetry to path
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-
 ###############################################################
-# BUILDER-BASE
-# Used to Build Dependencies + create our virtual environment
+# Install system dependencies 
 ###############################################################
-FROM python-base as builder-base
 
-# Install system dependencies
 RUN apt-get update && apt-get -y install --no-install-recommends \
     curl \
     make \
@@ -49,7 +44,7 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
-# Create a directory app/src/
+# Create a directory /app/
 WORKDIR /app/
 
 # Copy project pyproject.toml and poetry.lock here to ensure they'll be cached.
@@ -59,12 +54,9 @@ COPY ./pyproject.toml .
 # $POETRY_NO_INTERACTION 
 RUN poetry install --no-root
 
-
 ###############################################################
-# DEVELOPMENT
-# Image used during Development and Testing
+# Install application and define entry point 
 ###############################################################
-FROM builder-base as development
 
 # Project files
 COPY ./src/__init__.py ./src/feature_pipeline.py ./src/logger.py ./src/paths.py ./src/predict.py ./src/server.py src/
