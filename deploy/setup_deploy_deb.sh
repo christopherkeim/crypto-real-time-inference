@@ -177,7 +177,7 @@ then
 else
   echo "Building webhook 🦫"
   pushd crypto-real-time-inference/deploy
-  go build
+  go build webhook.go
   popd
 fi
 
