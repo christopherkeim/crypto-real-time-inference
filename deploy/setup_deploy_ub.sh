@@ -3,8 +3,8 @@
 # machine to work with Poetry managed Python3.10 source code.
 # 
 # Targets:
-#   - Poetry 1.5.1
-#   - Python3.10
+#   - Docker 24.0.6
+#   - Go1.21.1
 #
 # Requirements:
 #   - Ubuntu 20.04/22.04
@@ -84,88 +84,137 @@ fi
 
 
 # -----------------------------------------------------------------------------------------------------------
-# 2) Poetry Install: here we'll install and configure Poetry, as well as add Poetry to the PATH.
+# 2) Docker Install: here we'll install Docker
 # -----------------------------------------------------------------------------------------------------------
 
-# Install Poetry using the official installer
-if ( which poetry > /dev/null )
+# -----------------------------------------------------------------------------------------------------------
+# 2.1) Set up the repository: Before you install Docker Engine for the first time on a new host machine, 
+# you need to set up the Docker repository. Afterward, you can install and update Docker from the repository.
+# -----------------------------------------------------------------------------------------------------------
+
+# Pull the current machine's distro for GPG key targeting
+DISTRO=$(lsb_release -d | awk -F ' ' '{print tolower($2)}')
+
+# Add Docker’s official GPG key
+if [ -f /etc/apt/keyrings/docker.gpg ]
 then
-  echo "Poetry is already installed 🟢"
+  echo 'Docker GPG Key already installed at /etc/apt/keyrings/docker.gpg 🟢'
 else
-  echo "Installing Poetry 🧙‍♂️"
-  curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
+  echo 'Installing Docker GPG Key at /etc/apt/keyrings/docker.gpg 🔧'
+  
+  # Create the /etc/apt/keyrings directory with appropriate permissions
+  sudo install -m 0755 -d /etc/apt/keyrings
+  
+  # Download the GPG key from Docker
+  curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo chmod a+r /etc/apt/keyrings/docker.gpg
 fi
 
-# Add Poetry to the path in the current user's .bashrc
-if ( poetry --version > /dev/null )
+# Set up the repository
+if [ -f /etc/apt/sources.list.d/docker.list ] 
 then
-  echo "Poetry is already in PATH 🟢"
+  echo 'docker.list repository already exists at /etc/apt/sources.list.d/docker.list 🟢'
 else
-  echo -e "# Add Poetry (Python Package Manager) to PATH\nexport PATH="/home/$USER/.local/bin:$PATH"" >> ~/.bashrc
-  source ~/.bashrc
-fi
-
-# Configure Poetry to put build all virtual environments in the project's directory
-if [ "$(poetry config virtualenvs.in-project)" == "true" ]
-then
-  echo "Poetry already configured to create virtual envs within projects 🟢"
-else
-  echo "Configuring Poetry to create virtual envs in projects 🪐"
-  poetry config virtualenvs.in-project true
+  echo 'Installing docker.list repository at /etc/apt/sources.list.d/docker.list 🔧'
+  echo \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$DISTRO \
+    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 fi
 
 # -----------------------------------------------------------------------------------------------------------
-# 3) Python3.10 Install: here we'll install Python3.10 - feel free to swap this for any version you'd like.
+# 2.2) Install Docker Engine (with Docker Compose)
 # -----------------------------------------------------------------------------------------------------------
 
-# Check if software-properties-common is in the apt-cache
-if ( apt-cache show software-properties-common > /dev/null )
+# Check if docker-ce is in the apt-cache
+if ( apt-cache show docker-ce > /dev/null )
 then
-  echo "software-properties-common is already cached 🟢"
+  echo "docker-ce is already cached 🟢"
 else
   sudo apt update
 fi
 
-# Check for the software-properties-common requirement
-if ( dpkg -L software-properties-common > /dev/null )
+# Install Docker Engine, containerd, and Docker Compose
+if ( docker --version > /dev/null )
 then
-  echo "software-properties-common requirement met 🟢"
+  echo "Docker is already installed 🟢"
+  echo "Using $(docker --version)"
 else
-  echo "Installing software-properties-common 🔧"
-  sudo apt install -y software-properties-common
+  echo "Installing Docker 🐳"
+
+  # Installs
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  
+  # Verify that the Docker Engine installation is successful by running the hello-world image
+  sudo docker run --rm hello-world
 fi
 
-# Add this apt repository for Python 3.9
-if [ -n "$(ls /etc/apt/sources.list.d | grep deadsnakes)" ]
+
+
+# -----------------------------------------------------------------------------------------------------------
+# 3) Go Install: here we'll install and configure Go
+# -----------------------------------------------------------------------------------------------------------
+
+# Check if Go is in the apt-cache
+if ( apt-cache show go > /dev/null )
 then
-  echo "ppa:deadsnakes/ppa apt repository present 🟢"
+  echo "Go is already cached 🟢"
 else
-  echo "Adding deadsnakes to the apt-repository 💀🐍"
-  sudo add-apt-repository -y ppa:deadsnakes/ppa
-  # Refresh the package list again
   sudo apt update
 fi
 
-# Now you can download Python3.10
-if ( which python3.10 > /dev/null )
+# Install Go
+if ( which go > /dev/null )
 then
-  echo "Python3.10 already installed 🐍"
+  echo "Go is already installed 🟢"
 else
-  echo "Installing Python3.10 🔧"
-  sudo apt install -y python3.10
-  sudo apt-get install -y gcc python3.10-dev
+  echo "Installing Go 🦫"
+  curl -O https://go.dev/dl/go.1.21.2.src.tar.gz
+  sudo tar -C /usr/local -xzf go1.21.2.src.tar.gz
+  echo -e "# Add Go to PATH\nexport PATH="/usr/local/go/bin:$PATH"" >> ~/.profile
+  exec bash
 fi
 
-# Verify Python3.10 installation
-if ( which python3.10 > /dev/null )
+# Verify installation of Go
+if ( go version > /dev/null )
 then
-  echo "$(python3.10 --version) 🐍 🚀 ✨"
+  echo "$(go version) 🦫 🚀"
 else
-  echo "Python 3.10 was not installed successfully 🔴"
+  echo "Go was not installed successfully 🔴"
+fi
+
+
+# -----------------------------------------------------------------------------------------------------------
+# 4) Build the Go Webhook Server
+# -----------------------------------------------------------------------------------------------------------
+
+# Build the webhook server if it does not exist
+if ( -f deploy/webhook )
+then
+  echo "webhook already built 🟢"
+else
+  echo "Building webhook 🦫"
+  pushd crypto-real-time-inference/deploy
+  go build webhook.go
+  popd
 fi
 
 # -----------------------------------------------------------------------------------------------------------
-# 3) Python Dependency Installation: this will install all source code dependencies defined in the 
-#    `poetry.lock` file onto the machine
+# 5) Add execute permissions to `deploy_container.sh`
 # -----------------------------------------------------------------------------------------------------------
-poetry install
+
+if [ "$(ls -l deploy/deploy_container.sh | cut -d " " -f1)" == "-rwxrw-r--" ]
+then
+  echo "Permissions set for deploy_container.sh 🟢"
+else
+  echo "Setting permissions for deploy_container.sh 🐳"
+  chmod u+x deploy/deploy_container.sh
+fi
+
+# Verify permissions for deploy_container.sh
+if [ "$(ls -l deploy/deploy_container.sh | cut -d " " -f1)" == "-rwxrw-r--" ]
+then
+  echo "Permissions set for deploy_container.sh 🟢 🐳"
+else
+  echo "Error setting permissions for deploy_container.sh 🔴"
+fi
