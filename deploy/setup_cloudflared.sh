@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #-----------------------------------------------------------------------------------------------------------#
-# This script sets up a tunneling dependencies on an Ubuntu 20.04/22.04
+# This script sets up tunneling dependencies on an Ubuntu 20.04/22.04
 #
 # Documentation:
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-local-tunnel/
