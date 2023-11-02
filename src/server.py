@@ -73,7 +73,7 @@ def get_prediction(
       time_from (str): The datetime hour to predict price point in +1 hour from
       model_name (str): Name of model
     """
-    # Get current now()
+    # Get current time
     initial_request_time: datetime = datetime.now()
 
     # Compute datetime hour for prediction
@@ -111,7 +111,7 @@ def get_prediction(
         int((prediction_time + timedelta(hours=1)).timestamp() * 1000)
     )
 
-    # Construction the Prediction response
+    # Construct the Prediction response
     r: PredictionResult = PredictionResult(
         model=model_name,
         coin=coin,
