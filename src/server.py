@@ -4,7 +4,7 @@ Backend server for inference service.
 from typing import Dict
 from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from fastapi import FastAPI
 import uvicorn
 import pandas as pd
