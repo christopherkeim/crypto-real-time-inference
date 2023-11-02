@@ -88,4 +88,4 @@ frontend/.next/
 .env.local
 
 # Compiled binary executables
-webhook
+deploy/webhook
