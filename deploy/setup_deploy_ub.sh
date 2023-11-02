@@ -48,6 +48,23 @@ else
   sudo apt install -y curl
 fi
 
+# Check if wget is in the apt-cache
+if ( apt-cache show wget > /dev/null )
+then
+  echo "wget is already cached 🟢"
+else
+  sudo apt update
+fi
+
+# Ensure wget is installed on the machine
+if ( which wget > /dev/null )
+then
+  echo "wget is already installed 🟢"
+else
+  echo "Installing wget 🌀"
+  sudo apt install -y wget
+fi
+
 # Check if make is in the apt-cache
 if ( apt-cache show make > /dev/null )
 then
@@ -155,12 +172,12 @@ fi
 # 3) Go Install: here we'll install and configure Go
 # -----------------------------------------------------------------------------------------------------------
 
-# Check if Go is in the apt-cache
-if ( apt-cache show go > /dev/null )
+# Pull the machine's chip architecture
+if [ "$(uname -m)" == "x86_64" ]
 then
-  echo "Go is already cached 🟢"
+  CHIP_ARCH="amd64"
 else
-  sudo apt update
+  CHIP_ARCH="arm64"
 fi
 
 # Install Go
@@ -169,10 +186,10 @@ then
   echo "Go is already installed 🟢"
 else
   echo "Installing Go 🦫"
-  curl -O https://go.dev/dl/go.1.21.2.src.tar.gz
-  sudo tar -C /usr/local -xzf go1.21.2.src.tar.gz
+  wget -O https://go.dev/dl/go1.21.3.linux-$CHIP_ARCH.tar.gz
+  sudo tar -C /usr/local -xzf go1.21.3.linux-$CHIP_ARCH.tar.gz
   echo -e "# Add Go to PATH\nexport PATH="/usr/local/go/bin:$PATH"" >> ~/.profile
-  exec bash
+  source ~/.profile
 fi
 
 # Verify installation of Go
@@ -189,12 +206,12 @@ fi
 # -----------------------------------------------------------------------------------------------------------
 
 # Build the webhook server if it does not exist
-if ( -f deploy/webhook )
+if [ -f deploy/webhook ]
 then
   echo "webhook already built 🟢"
 else
   echo "Building webhook 🦫"
-  pushd crypto-real-time-inference/deploy
+  pushd deploy
   go build webhook.go
   popd
 fi

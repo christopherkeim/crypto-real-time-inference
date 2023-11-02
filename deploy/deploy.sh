@@ -8,10 +8,10 @@
 # Note that each script called is idempotent.
 
 # Setup the deployment environment
-bash deploy/setup_deploy_deb.sh
+bash deploy/setup_deploy_ub.sh
 
 # Set environment variables for deploy
-source ./deploy/environment.sh
+source deploy/environment.sh
 
 # Spin up the Prediction server
 bash deploy/deploy_container.sh
