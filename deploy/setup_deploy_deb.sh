@@ -41,7 +41,7 @@ fi
 # Ensure wget is installed on the machine
 if ( which wget > /dev/null )
 then
-  echo "curl is already installed 🟢"
+  echo "wget is already installed 🟢"
 else
   echo "Installing wget 🌀"
   sudo apt install -y wget
