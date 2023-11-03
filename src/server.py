@@ -4,7 +4,7 @@ Backend server for inference service.
 from typing import Dict
 from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from fastapi import FastAPI
 import uvicorn
 import pandas as pd
@@ -73,21 +73,26 @@ def get_prediction(
       time_from (str): The datetime hour to predict price point in +1 hour from
       model_name (str): Name of model
     """
-    # Calculate UTC request timestamp
-    request_timestamp: str = str(int(datetime.now(timezone.utc).timestamp() * 1000))
+    # Get current time
+    initial_request_time: datetime = datetime.now()
 
     # Compute datetime hour for prediction
-    if time_from == "now":
-        time_from = datetime.now().strftime("%Y-%m-%dT%H")
-    else:
-        time_from = (datetime.now() - timedelta(hours=int(time_from))).strftime(
-            "%Y-%m-%dT%H"
-        )
+    prediction_time: datetime = datetime.strptime(
+        initial_request_time.strftime("%Y-%m-%dT%H"), "%Y-%m-%dT%H"
+    )
+
+    if time_from != "now":
+        prediction_time = initial_request_time - timedelta(hours=int(time_from))
+
+    # Calculate UTC request timestamp
+    request_timestamp: str = str(int(initial_request_time.timestamp() * 1000))
+
+    print(prediction_time.strftime("%Y-%m-%dT%H"))
 
     # Download the data for that target hour
     raw_data: pd.DataFrame = download_data_for_t_hours(
         product_id=coin,
-        date_time_hour=time_from,
+        date_time_hour=prediction_time.strftime("%Y-%m-%dT%H"),
         t=24,
     )
 
@@ -101,12 +106,12 @@ def get_prediction(
     predicted_difference: float = price_next_hour - raw_data["close"].values[0]
     sign: str = "+" if predicted_difference > 0 else ""
 
-    # Calculate UNIX timestamp for time_from
+    # Calculate UNIX timestamp for time_from and add 1 hour
     unix_time_from: str = str(
-        int(datetime.strptime(time_from, "%Y-%m-%dT%H").timestamp() * 1000)
+        int((prediction_time + timedelta(hours=1)).timestamp() * 1000)
     )
 
-    # Construction the Prediction response
+    # Construct the Prediction response
     r: PredictionResult = PredictionResult(
         model=model_name,
         coin=coin,
