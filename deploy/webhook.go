@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -22,14 +21,15 @@ func main() {
 
 		if deploy_key == os.Getenv("DOCKER_HUB_DEPLOY_KEY") {
 			// Execute the bash script
-			out, err := exec.Command("deploy/deploy_container.sh").Output()
+			fmt.Printf("\x1b[94mStarting container upgrade\x1b[0m 🐳\n\n")
+			out, err := exec.Command("deploy/deploy_container.sh").CombinedOutput()
 
 			if err != nil {
-				log.Fatal(err)
+				fmt.Printf("Error: %s", err.Error())
 			}
 			// Std ouput on server
-			fmt.Printf("Starting container upgrade 🐳\n")
-			log.Print(string(out))
+			fmt.Printf("\x1b[96mThe output is:\x1b[0m\n%s\n", out)
+			fmt.Printf("\x1b[36mFinished container upgrade\x1b[0m 🟢\n")
 		} else {
 			fmt.Printf("Invalid deployment key 🔴\n")
 		}
