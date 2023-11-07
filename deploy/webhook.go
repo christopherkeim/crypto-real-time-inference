@@ -28,12 +28,12 @@ func main() {
 				log.Fatal(err)
 			}
 			// Std ouput on server
-			fmt.Printf("Starting container upgrade 🐳")
-			fmt.Print(string(out))
+			fmt.Printf("Starting container upgrade 🐳\n")
+			log.Print(string(out))
 		} else {
 			fmt.Printf("Invalid deployment key 🔴\n")
 		}
 	}).Methods("POST")
 
-	http.ListenAndServe("127.0.0.1:10000", r)
+	http.ListenAndServe("127.0.0.1:8001", r)
 }
