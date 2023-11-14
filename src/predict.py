@@ -67,20 +67,19 @@ def load_nn_model_from_name(model_name: str, product_id: str) -> Sequential:
 
 
 def download_data_for_t_hours(
-    product_id: str, date_time_hour: str, t: int = 24
+    product_id: str, date_time_hour: datetime, t: int = 26
 ) -> pd.DataFrame:
     """
     Downloads raw OHLC candles for the specified cryptocurrency
     and date time hour + t hours into the past and returns them as a DataFrame.
     """
-    target_time: str = f"{date_time_hour}:00:00"
-    # Calculate the start time
-    end = datetime.strptime(target_time, "%Y-%m-%dT%H:%M:%S")
-    start = (end - timedelta(hours=t)).strftime("%Y-%m-%dT%H:%M:%S")
+    # Calculate the start time and end time
+    end: str = str(int(date_time_hour.timestamp()))
+    start: str = str(int((date_time_hour - timedelta(hours=t)).timestamp()))
 
     # Call the Coinbase Exchange REST API for this product, datetime, and granularity
     URL: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
-    URL += f"candles?start={start}&end={target_time}&granularity=3600"
+    URL += f"candles?start={start}&end={end}&granularity=3600"
     r: requests.models.Response = requests.get(URL)
     data: List[List[int, float, float, float, float, float]] = r.json()
 
