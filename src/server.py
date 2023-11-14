@@ -1,7 +1,7 @@
 """
 Backend server for inference service.
 """
-from typing import Dict
+from typing import Dict, List
 from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -32,6 +32,7 @@ class PredictionResult(BaseModel):
     difference: str
     time: str
     request_timestamp: str
+    past_24_hour_prices: List[float]
 
 
 class Coin(str, Enum):
@@ -77,24 +78,26 @@ def get_prediction(
     initial_request_time: datetime = datetime.now()
 
     # Compute datetime hour for prediction
-    prediction_time: datetime = datetime.strptime(
-        initial_request_time.strftime("%Y-%m-%dT%H"), "%Y-%m-%dT%H"
-    )
+    prediction_time: datetime = initial_request_time
 
     if time_from != "now":
-        prediction_time = initial_request_time - timedelta(hours=int(time_from))
+        prediction_time -= timedelta(hours=int(time_from))
 
     # Calculate UTC request timestamp
     request_timestamp: str = str(int(initial_request_time.timestamp() * 1000))
 
-    print(prediction_time.strftime("%Y-%m-%dT%H"))
-
-    # Download the data for that target hour
+    # Download current candle and past 25 hours for target time
     raw_data: pd.DataFrame = download_data_for_t_hours(
         product_id=coin,
-        date_time_hour=prediction_time.strftime("%Y-%m-%dT%H"),
-        t=24,
+        date_time_hour=prediction_time,
+        t=26,
     )
+
+    # Extract the current price
+    current_price: float = raw_data["close"].values[0]
+
+    # Drop first row holding non-floored candle
+    raw_data = raw_data.iloc[1:]
 
     # Engineer features for model consumption
     feature_row: pd.DataFrame = get_feature_row_for_prediction(raw_data, coin)
@@ -103,7 +106,7 @@ def get_prediction(
     price_next_hour: float = predict(feature_row, coin, model_name=model_name)
 
     # Calculate the predicted difference
-    predicted_difference: float = price_next_hour - raw_data["close"].values[0]
+    predicted_difference: float = price_next_hour - current_price
     sign: str = "+" if predicted_difference > 0 else ""
 
     # Calculate UNIX timestamp for time_from and add 1 hour
@@ -112,18 +115,19 @@ def get_prediction(
     )
 
     # Construct the Prediction response
-    r: PredictionResult = PredictionResult(
+    response: PredictionResult = PredictionResult(
         model=model_name,
         coin=coin,
-        current_price=f"{raw_data['close'].values[0]:.2f}",
+        current_price=f"{raw_data['close'].values[-1]:.2f}",
         prediction=f"{price_next_hour:.2f}",
         difference=f"{sign}{predicted_difference:.2f}",
         time=unix_time_from,
         request_timestamp=request_timestamp,
+        past_24_hour_prices=raw_data["close"].to_list()[1:],
     )
 
     # Return it as a JSON object
-    return {"prediction": r}
+    return {"prediction": response}
 
 
 if __name__ == "__main__":
