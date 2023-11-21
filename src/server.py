@@ -87,20 +87,24 @@ def get_prediction(
     request_timestamp: str = str(int(initial_request_time.timestamp() * 1000))
 
     # Download current candle and past 25 hours for target time
-    raw_data: pd.DataFrame = download_data_for_t_hours(
+    coinbase_candles: List[List[int | float]] = download_data_for_t_hours(
         product_id=coin,
         date_time_hour=prediction_time,
         t=26,
     )
 
-    # Extract the current price
-    current_price: float = raw_data["close"].values[0]
-
-    # Drop first row holding non-floored candle
-    raw_data = raw_data.iloc[1:]
+    # Transform list of lists to Pandas DataFrame
+    coinbase_candles_df: pd.DataFrame = pd.DataFrame(
+        coinbase_candles, columns=["time", "low", "high", "open", "close", "volume"]
+    )
 
     # Engineer features for model consumption
-    feature_row: pd.DataFrame = get_feature_row_for_prediction(raw_data, coin)
+    feature_row: pd.DataFrame = get_feature_row_for_prediction(
+        coinbase_candles_df, coin
+    )
+
+    # Extract the current price
+    current_price: float = coinbase_candles_df["close"].values[-1]
 
     # Get the prediction
     price_next_hour: float = predict(feature_row, coin, model_name=model_name)
@@ -111,19 +115,26 @@ def get_prediction(
 
     # Calculate UNIX timestamp for time_from and add 1 hour
     unix_time_from: str = str(
-        int((prediction_time + timedelta(hours=1)).timestamp() * 1000)
+        int(
+            (
+                prediction_time.replace(microsecond=0, second=0, minute=0)
+                + timedelta(hours=1)
+            ).timestamp()
+            * 1000
+        )
     )
+    print(coinbase_candles_df["close"])
 
     # Construct the Prediction response
     response: PredictionResult = PredictionResult(
         model=model_name,
         coin=coin,
-        current_price=f"{raw_data['close'].values[-1]:.2f}",
+        current_price=f"{coinbase_candles_df['close'].values[-1]:.2f}",
         prediction=f"{price_next_hour:.2f}",
         difference=f"{sign}{predicted_difference:.2f}",
         time=unix_time_from,
         request_timestamp=request_timestamp,
-        past_24_hour_prices=raw_data["close"].to_list()[1:],
+        past_24_hour_prices=coinbase_candles_df["close"].to_list()[2:],
     )
 
     # Return it as a JSON object
