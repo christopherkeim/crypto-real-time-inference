@@ -68,7 +68,7 @@ def load_nn_model_from_name(model_name: str, product_id: str) -> Sequential:
 
 def download_data_for_t_hours(
     product_id: str, date_time_hour: datetime, t: int = 26
-) -> pd.DataFrame:
+) -> List[List[int | float]]:
     """
     Downloads raw OHLC candles for the specified cryptocurrency
     and date time hour + t hours into the past and returns them as a DataFrame.
@@ -81,12 +81,9 @@ def download_data_for_t_hours(
     URL: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
     URL += f"candles?start={start}&end={end}&granularity=3600"
     r: requests.models.Response = requests.get(URL)
-    data: List[List[int, float, float, float, float, float]] = r.json()
+    data: List[List[int | float]] = r.json()
 
-    # Transform list of lists to Pandas DataFrame and return it
-    return pd.DataFrame(
-        data, columns=["time", "low", "high", "open", "close", "volume"]
-    )
+    return data
 
 
 def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
