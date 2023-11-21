@@ -22,6 +22,13 @@ export default function Footer() {
             >
               License
             </a>
+            &nbsp;|&nbsp;
+            <a
+              className="text-blue-600 transition duration-150 ease-in-out hover:underline dark:text-blue-100"
+              href="/policy"
+            >
+              Policy
+            </a>
           </div>
         </div>
       </div>
