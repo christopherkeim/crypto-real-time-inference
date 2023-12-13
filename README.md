@@ -19,7 +19,7 @@
 
 # Crypto Real-Time Inference
 
-The aim of this application is to leverage historical Bitcoin price data and cutting-edge machine learning algorithms to serve inferences about Bitcoin's future price points within a 1 hour window, in real time.
+The aim of this application is to leverage historical cryptocurrency price data and cutting-edge machine learning algorithms to serve inferences about Bitcoin and Ethereum future price points within a 1 hour window, in real time.
 
 This is my first time working with time series data, and here we will work with raw time series datapoints that are served as OHLC ("open", "high", "low", "close") "candles".
 
@@ -27,7 +27,7 @@ At a high level, I've chosen to think of a given cryptocurrency as a complex sys
 
 In this framework, a "candle" is a measurement of a cryptocurrency's state at a given moment in time - and by measuring state at a series of time points we can see how the system's state evolves over time. The raw dataset itself (consisting of multiple candles) is a function that maps empirically measured states to time points. At a fundamental level, the same concepts can be applied to any physical system composed of a large number of interacting variables - which means this is a very challenging problem!
 
-Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bitcoin.
+This application natively makes predictions for both Bitcoin and Ethereum pricepoints, though the source code supports any cryptocurrency that has publically available data.
 
 ## Disclaimer
 
@@ -37,7 +37,7 @@ Here I've chosen to focus on one, and only one, cryptocurrency at the moment: Bi
 
 ### Setup
 
-**Note: for the moment I've targeted Ubuntu 20.04/22.04 for automated dev setup.**
+**Note: I've targeted Ubuntu 20.04/22.04 for automated dev setup.**
 
 1. You can clone this repository onto a machine with:
 
@@ -64,7 +64,7 @@ make install
 
 ### Data
 
-4. To download Bitcoin candles using default parameters (from September 2020 - September 2023) run:
+4. To download Bitcoin candles using default parameters (from September 2020 - current day) run:
 
 ```bash
 make rawdata
@@ -72,7 +72,7 @@ make rawdata
 
 ### Feature Engineering
 
-5. To build supervised-machine-learning-ready datasets from this raw data, run:
+5. To build supervised-machine-learning-ready datasets from this raw price data, run:
 
 ```bash
 make features
@@ -117,7 +117,7 @@ docker build -t crypto-real-time-inference:v0 .
 2. To start prediction the service container, run:
 
 ```bash
-docker run -p 8000:8000 crypto-real-time-inference:v0
+docker run -d -p 8000:8000 crypto-real-time-inference:v0
 ```
 
 The containerized prediction service will serve predictions at `http://0.0.0.0:8000/api/predict`.
@@ -176,14 +176,14 @@ A great candidate for deployment is [Vercel](https://vercel.com), just make sure
 
 ## In Progress 🔧💻
 
-- [x] Continuous Integration (CI)
-- [x] Minimum viable Data Extraction Web Scraper (CLI tool)
-- [x] Minimum viable Feature Engineering Pipeline
+- [x] Continuous Integration
+- [x] Data extraction from Coinbase (CLI tool)
+- [x] Feature Engineering Pipeline
 - [x] Experiment tracking (Weight & Biases)
-- [x] Minimum viable Training Pipelines (ML & DL)
-- [x] Minimum viable Inference Pipeline (REST API)
-- [x] Continuous Delivery to Docker Hub (CD, `x86_64`, `arm64` targets)
-- [ ] Frontend
+- [x] Training Pipelines (ML & DL)
+- [x] Prediction Service (FastAPI, Docker)
+- [x] Continuous Delivery to Docker Hub (`x86_64`, `arm64` targets)
+- [x] Frontend
 - [x] Continuous Deployment
 
 <!-- Links -->
