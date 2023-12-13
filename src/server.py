@@ -123,7 +123,6 @@ def get_prediction(
             * 1000
         )
     )
-    print(coinbase_candles_df["close"])
 
     # Construct the Prediction response
     response: PredictionResult = PredictionResult(
