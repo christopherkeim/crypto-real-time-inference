@@ -1,4 +1,3 @@
-from typing import List, Dict
 import click
 import os
 import wandb
@@ -22,12 +21,12 @@ def download_model_from_wandb(product_id: str, model_name: str) -> None:
     model_url: str = f"{os.environ['WANDB_ENTITY']}/model-registry/"
     model_url += f"{product_id}_{model_name}_model:latest"
 
-    reg_model = wandb.use_artifact(
+    registry_model = wandb.use_artifact(
         model_url,
         type="model",
     )
     # Download the model to disk
-    model_path = reg_model.download(MODELS_DIR)
+    model_path = registry_model.download(MODELS_DIR)
     run.finish()
 
     logger.info(f"Successfully downloaded model to: {model_path} 🟢")
@@ -59,13 +58,13 @@ def download_latest_models_from_wandb(
     selection value ("all", "nn", or "ml") and downloads the latest model
     versions from W&B.
     """
-    COINS: Dict[str, List[str]] = {
+    COINS: dict[str, list[str]] = {
         "all": ["BTC-USD", "ETH-USD"],
         "bitcoin": ["BTC-USD"],
         "ethereum": ["ETH-USD"],
     }
 
-    MODELS: Dict[str, List[str]] = {
+    MODELS: dict[str, list[str]] = {
         "all": ["cnn", "lasso", "X_scaler"],
         "nn": ["cnn", "X_Scaler"],
         "ml": ["lasso", "X_scaler"],

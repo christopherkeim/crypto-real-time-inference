@@ -14,7 +14,7 @@ if specified.
 This code can be used as a module in another script or as a CLI tool. 
 """
 
-from typing import List, Tuple, Optional, Union
+from typing import Optional, Union
 from pathlib import Path
 import os
 import pickle
@@ -40,13 +40,13 @@ def transform_ts_data_into_lagged_features_and_target(
     path_to_input: Path = DATA_DIR / "BTC-USD_ohlc_data.parquet",
     window_seq_len: int = 24,
     step_size: int = 1,
-) -> Tuple[pd.DataFrame, pd.Series]:
+) -> tuple[pd.DataFrame, pd.Series]:
     """
     Calculates lag features and transforms raw data from time series format
     into a (features, target) format that can be used to train supervised ML models.
     """
     # Load the parquet file
-    ts_data = pd.read_parquet(path_to_input)
+    ts_data: pd.DataFrame = pd.read_parquet(path_to_input)
     # Calculate hour (sin) and day (sin, cos) time features
     ts_data = _get_time_signal_features(ts_data)
     # Convert seconds -> date time, sort by time, and drop duplicate time points
@@ -56,46 +56,50 @@ def transform_ts_data_into_lagged_features_and_target(
     ts_data.reset_index(drop=True, inplace=True)
 
     # Define a 1, 2, 3, ... -> 24 hour lag sequence for our x features
-    x_time_steps: List[int] = [
+    x_time_steps: list[int] = [
         i for i in reversed(range(1, window_seq_len + 1, step_size))
     ]
 
-    x_lag = Lag(x_time_steps)
+    x_lag: Lag = Lag(x_time_steps)
 
     # Create lagged columns for closing price
-    x_price = ts_data[["close"]].values
-    x_lagged_price = x_lag.fit_transform(x_price)
+    x_price: np.ndarray = ts_data[["close"]].values
+    x_lagged_price: np.ndarray = x_lag.fit_transform(x_price)
 
     # Create lagged columns for volume
-    x_volume = ts_data[["volume"]].values
-    x_lagged_volume = x_lag.fit_transform(x_volume)
+    x_volume: np.ndarray = ts_data[["volume"]].values
+    x_lagged_volume: np.ndarray = x_lag.fit_transform(x_volume)
 
     # Price lagged features DataFrame
-    price_features = pd.DataFrame(
+    price_features: pd.DataFrame = pd.DataFrame(
         x_lagged_price,
         columns=[f"price_{i}_hour_ago" for i in x_time_steps],
     )
 
     # Volume lagged features DataFrame
-    volume_features = pd.DataFrame(
+    volume_features: pd.DataFrame = pd.DataFrame(
         x_lagged_volume,
         columns=[f"volume_{i}_hour_ago" for i in x_time_steps],
     )
 
     # Full features DataFrame
-    features_df = pd.concat([price_features, volume_features, ts_data], axis=1)
+    features_df: pd.DataFrame = pd.concat(
+        [price_features, volume_features, ts_data], axis=1
+    )
 
     # Define a -1 hour (1 hour in future) lag for our target variable y
-    y_lag = Lag(-1)
+    y_lag: Lag = Lag(-1)
 
-    y_price = features_df[["close"]].values
-    y_lagged_price = y_lag.fit_transform(y_price)[1:]
+    y_price: np.ndarray = features_df[["close"]].values
+    y_lagged_price: np.ndarray = y_lag.fit_transform(y_price)[1:]
 
     # Targets -1 (1 hour in future) lagged DataFrame
-    targets_df = pd.DataFrame(y_lagged_price, columns=["target_price_next_hour"])
+    targets_df: pd.DataFrame = pd.DataFrame(
+        y_lagged_price, columns=["target_price_next_hour"]
+    )
 
     # Concatenate DataFrames to drop NaN values
-    full_df = pd.concat([features_df, targets_df], axis=1)
+    full_df: pd.DataFrame = pd.concat([features_df, targets_df], axis=1)
     full_df = full_df.dropna(axis=0)
 
     # Set time as index
@@ -113,8 +117,8 @@ def _get_time_signal_features(X: pd.DataFrame) -> pd.DataFrame:
     Calculates 3 new time signal features ("sin_hour", "sin_day"
     "cos_day") and adds these columns to our DataFrame.
     """
-    NUMBER_OF_SECONDS_IN_HOUR = 60 * 60
-    NUMBER_OF_SECONDS_IN_DAY = 60 * 60 * 24
+    NUMBER_OF_SECONDS_IN_HOUR: int = 60 * 60
+    NUMBER_OF_SECONDS_IN_DAY: int = 60 * 60 * 24
     # Hour sin signal
     X["sin_hour"] = np.sin(X["time"] * (2 * np.pi / NUMBER_OF_SECONDS_IN_HOUR))
     # Day sin and cosine signals
@@ -123,14 +127,14 @@ def _get_time_signal_features(X: pd.DataFrame) -> pd.DataFrame:
     return X
 
 
-def _get_price_columns(X: pd.DataFrame) -> List[str]:
+def _get_price_columns(X: pd.DataFrame) -> list[str]:
     """
     Get the columns of the input DataFrame that contain the price data.
     """
     return [col for col in X.columns if "price" in col]
 
 
-def _get_volume_columns(X: pd.DataFrame) -> List[str]:
+def _get_volume_columns(X: pd.DataFrame) -> list[str]:
     """
     Get the columns of the input DataFrame that contain the volume data.
     """
@@ -218,7 +222,9 @@ class RSI(BaseEstimator, TransformerMixin):
 
 
 def get_feature_engineering_pipeline(pp_rsi_window: int = 14) -> Pipeline:
-    """Returns the preprocessing pipeline."""
+    """
+    Returns the preprocessing pipeline.
+    """
     return make_pipeline(
         # Polynomial features (upper and lower shadows)
         FunctionTransformer(_get_polynomial_features),
@@ -271,7 +277,7 @@ def version_artifacts_with_wandb(
       - X_scaler model to model registry
     """
     logger.info("Versioning data @ W&B backend ✨")
-    run = wandb.init(
+    run: wandb.Run = wandb.init(
         project=os.environ["WANDB_PROJECT"],
         name="pre_processed_features_target_datasets",
     )
@@ -356,7 +362,7 @@ def generate_full_features_and_target_datasets(
     window: int = 24,
     step: int = 1,
     track: bool = False,
-) -> Tuple[pd.DataFrame, pd.Series]:
+) -> tuple[pd.DataFrame, pd.Series]:
     """
     Full workflow for preprocessing the raw crypto currency data
     scraped from the Coinbase Exchange REST API, converting it from
@@ -396,7 +402,7 @@ def generate_full_features_and_target_datasets(
 
     # Build preprocessing pipeline
     logger.info(f"Building feature engineering pipeline for {product_id} 🔧\n")
-    feature_engineering_pipeline = get_feature_engineering_pipeline()
+    feature_engineering_pipeline: Pipeline = get_feature_engineering_pipeline()
 
     # Fit preprocessing pipeline
     logger.info("Fitting feature engineering pipeline... 👕\n")
@@ -404,7 +410,7 @@ def generate_full_features_and_target_datasets(
 
     # Transform X data
     logger.info("Transforming data ... 🐛 -> 🦋\n")
-    X = feature_engineering_pipeline.transform(features)
+    X: pd.DataFrame = feature_engineering_pipeline.transform(features)
 
     # Fit X_scaler model to features and save locally
     build_and_save_X_scaler_model(X, product_id)
