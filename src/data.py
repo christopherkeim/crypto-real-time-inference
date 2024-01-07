@@ -9,7 +9,7 @@ https://api.exchange.coinbase.com/products/{product_id}/
     candles?start={start_day}&end={end_day}&granularity=3600'
 """
 
-from typing import List, Dict
+from pathlib import Path
 from datetime import datetime, timedelta
 import time
 import requests
@@ -82,7 +82,7 @@ def download_ohlc_data_from_coinbase(
 
     # Construct a list of days as strings
     days: pd.DatetimeIndex = pd.date_range(start=from_day, end=to_day, freq="1D")
-    days: List[str] = [day.strftime("%Y-%m-%d") for day in days]
+    days: list[str] = [day.strftime("%Y-%m-%d") for day in days]
 
     # Create an empty DataFrame
     data: pd.DataFrame = pd.DataFrame()
@@ -90,9 +90,9 @@ def download_ohlc_data_from_coinbase(
     # START TIME
     start_time: float = time.time()
 
-    meta_data: Dict[str, tuple[int, int]] = {}
+    meta_data: dict[str, tuple[int, int]] = {}
 
-    product_ids: List[str] = product_ids.split()
+    product_ids: list[str] = product_ids.split()
 
     for product_id in product_ids:
         # Create a download dir for this currency if it doesn't exist
@@ -102,7 +102,7 @@ def download_ohlc_data_from_coinbase(
 
         for day in days:
             # Download the file if it doesn't exist
-            file_name = DATA_DIR / f"{product_id}_downloads" / f"{day}.parquet"
+            file_name: Path = DATA_DIR / f"{product_id}_downloads" / f"{day}.parquet"
             if file_name.exists():
                 logger.info(f"File {file_name} already exists, skipping")
                 data_one_day = pd.read_parquet(file_name)
@@ -152,10 +152,10 @@ def _download_data_for_one_day(product_id: str, day: str) -> pd.DataFrame:
     end: str = f"{end}T00:00:00"
 
     # Call the Coinbase Exchange REST API for this product, day, and granularity
-    URL: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
-    URL += f"candles?start={start}&end={end}&granularity=3600"
-    r: requests.models.Response = requests.get(URL)
-    data: List[List[int, float, float, float, float, float]] = r.json()
+    url: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
+    url += f"candles?start={start}&end={end}&granularity=3600"
+    r: requests.models.Response = requests.get(url)
+    data: list[list[int | float]] = r.json()
 
     # Transform list of lists to pandas dataframe and return
     return pd.DataFrame(

@@ -1,7 +1,7 @@
 """
 Backend server for inference service.
 """
-from typing import Dict, List
+
 from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -32,7 +32,7 @@ class PredictionResult(BaseModel):
     difference: str
     time: str
     request_timestamp: str
-    past_24_hour_prices: List[float]
+    past_24_hour_prices: list[float]
 
 
 class Coin(str, Enum):
@@ -63,7 +63,7 @@ def get_prediction(
     coin: Coin = "BTC-USD",
     time_from: Time = "now",
     model_name: ModelName = "cnn",
-) -> Dict[str, PredictionResult]:
+) -> dict[str, PredictionResult]:
     """
     Takes a cryptocurrency product id, target hour and model name and
     returns that model's prediction for the cryptocurrency's price point the
@@ -87,7 +87,7 @@ def get_prediction(
     request_timestamp: str = str(int(initial_request_time.timestamp() * 1000))
 
     # Download current candle and past 25 hours for target time
-    coinbase_candles: List[List[int | float]] = download_data_for_t_hours(
+    coinbase_candles: list[list[int | float]] = download_data_for_t_hours(
         product_id=coin,
         date_time_hour=prediction_time,
         t=26,

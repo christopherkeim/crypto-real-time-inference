@@ -15,7 +15,7 @@ parameters for these models are optimal. However, I will keep this in for future
 projects.
 """
 
-from typing import Dict, Tuple, List, Callable
+from typing import Callable
 from pathlib import Path
 import os
 import pickle
@@ -40,12 +40,13 @@ def get_model_constructor_from_name(name: str) -> Callable:
     """
     Returns the model constructor for an input name.
     """
-    if name == "lasso":
-        return Lasso
-    elif name == "lgbm":
-        return LGBMRegressor
-    else:
-        raise NotImplementedError(f"{name} not implemented")
+    match name:
+        case "lasso":
+            return Lasso
+        case "lgbm":
+            return LGBMRegressor
+        case _:
+            raise NotImplementedError(f"{name} not implemented")
 
 
 def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
@@ -55,7 +56,7 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
-    column_order: List[str] = list(X.columns)
+    column_order: list[str] = list(X.columns)
 
     # Load the scaler from disk if it exists
     if SCALER_PATH.exists():
@@ -83,7 +84,7 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
 
 def ts_train_val_test_split(
     X: pd.DataFrame, y: pd.Series, train_split: float = 0.8
-) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
     """
     Takes a set of features X and a target y and splits it into X_train, y_train,
     X_val, y_val, and X_test, y_test datasets according to a given train_split
@@ -114,13 +115,14 @@ def ts_train_val_test_split(
 
 def find_best_hyperparameters(
     model_name: str, model: Callable, X_train: pd.DataFrame, y_train: pd.Series
-) -> Dict:
+) -> dict:
     """
     Performs Grid Search Cross-Validation on a given model.
     """
     from sklearn.model_selection import GridSearchCV
     from hyperparam_config import LASSO_CV_CONFIG, LGBM_CV_CONFIG
 
+    params: dict[str, list[float]]
     if model_name == "lasso":
         params = LASSO_CV_CONFIG
 
@@ -136,7 +138,7 @@ def find_best_hyperparameters(
 
     grid_search_cv.fit(X_train, y_train)
 
-    best_params: Dict[str, int] = grid_search_cv.best_params_
+    best_params: dict[str, int] = grid_search_cv.best_params_
 
     return best_params
 
@@ -195,8 +197,8 @@ def _create_wandb_predictions_table(
     Constructs a graph of a given models predictions on an X_set and y_set
     and logs it to the W&B backend.
     """
-    y_preds = model.predict(X_set)
-    pred_df = pd.DataFrame({"predictions": y_preds, "actuals": y_set})
+    y_preds: np.ndarray = model.predict(X_set)
+    pred_df: pd.DataFrame = pd.DataFrame({"predictions": y_preds, "actuals": y_set})
     table = wandb.Table(dataframe=pred_df[-100:])
 
     run.log({f"{title}": table})
@@ -263,8 +265,8 @@ def train(
 
     # Evaluate model and store its validation MAE and test MAE
     logger.info(f"Evaluating {product_id}_{model_name} model... 🔎")
-    val_mae = evaluate(model, X_val, y_val)
-    test_mae = evaluate(model, X_test, y_test)
+    val_mae: float = evaluate(model, X_val, y_val)
+    test_mae: float = evaluate(model, X_test, y_test)
     logger.info(f"Validation MAE: {val_mae} 🎯")
     logger.info(f"Test MAE: {test_mae} 🎯\n")
 

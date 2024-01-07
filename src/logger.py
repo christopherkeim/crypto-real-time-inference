@@ -1,14 +1,12 @@
 """
 Creates a console logger with formatting.
 """
-
-from typing import Optional
 import logging
 
 
-def get_console_logger(name: Optional[str] = "base") -> logging.Logger:
+def get_console_logger(name: str = "base") -> logging.Logger:
     # Create a logger if it doesn't exist
-    logger: logging.RootLogger = logging.getLogger(name)
+    logger: logging.Logger = logging.getLogger(name)
     if not logger.handlers:
         logger.setLevel(logging.DEBUG)
 

@@ -15,7 +15,6 @@ test out on a local machine using a CPU, but do note that training on a GPU
 is much faster (and recommended).
 """
 
-from typing import Dict, Tuple, List
 from pathlib import Path
 import os
 import pickle
@@ -46,19 +45,20 @@ logger = get_console_logger("neural_net_training")
 def get_nn_model_from_name(
     name: str,
     n_features: int,
-) -> Tuple[Sequential, Dict]:
+) -> tuple[Sequential, dict]:
     """
     Returns the model constructor for an input name along with
     its hyperparamters.
     """
     from hyperparam_config import CNN_PARAMS, LSTM_PARAMS
 
-    if name == "cnn":
-        return build_cnn_model(n_features), CNN_PARAMS
-    elif name == "lstm":
-        return build_lstm_model(n_features), LSTM_PARAMS
-    else:
-        raise NotImplementedError(f"{name} not implemented")
+    match name:
+        case "cnn":
+            return build_cnn_model(n_features), CNN_PARAMS
+        case "lstm":
+            return build_lstm_model(n_features), LSTM_PARAMS
+        case _:
+            raise NotImplementedError(f"{name} not implemented")
 
 
 def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
@@ -68,7 +68,7 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
-    column_order: List[str] = list(X.columns)
+    column_order: list[str] = list(X.columns)
 
     # Load the scaler from disk if it exists
     if SCALER_PATH.exists():
@@ -89,14 +89,14 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     logger.info("X successfully scaled 🟢\n")
 
     # Construct a DataFrame with the same columns as input
-    X = pd.DataFrame(X_scaled, columns=column_order)
+    X: pd.DataFrame = pd.DataFrame(X_scaled, columns=column_order)
 
     return X
 
 
 def ts_train_val_test_split(
     X: pd.DataFrame, y: pd.Series, train_split: float = 0.8
-) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
     """
     Takes a set of features X and a target y and splits it into X_train, y_train,
     X_val, y_val, and X_test, y_test datasets according to a given train_split
@@ -143,7 +143,7 @@ def build_cnn_model(n_features: int) -> Sequential:
     Builds a CNN neural network model.
     """
     # Build the CNN neural network using the Sequential API
-    cnn_model = Sequential()
+    cnn_model: Sequential = Sequential()
     cnn_model.add(InputLayer((n_features, 1)))
     cnn_model.add(Conv1D(256, kernel_size=4))
     cnn_model.add(Flatten())
@@ -168,7 +168,7 @@ def build_lstm_model(n_features: int) -> Sequential:
     Builds a LSTM neural network model.
     """
     # Build the LSTM neural network using the Sequential API
-    lstm_model = Sequential()
+    lstm_model: Sequential = Sequential()
     lstm_model.add(InputLayer((n_features, 1)))
     lstm_model.add(LSTM(256, return_sequences=True))
     lstm_model.add(LSTM(256))
@@ -189,15 +189,15 @@ def build_lstm_model(n_features: int) -> Sequential:
 
 
 def _save_loss_plot_locally(
-    history: Dict,
+    history: dict,
     title: str,
 ) -> None:
     """
     Plots the learning curve of a neural network gathered from its
     training and saves it locally as a JPEG.
     """
-    epochs = range(1, len(history.history["loss"]) + 1)
-    history_df = pd.DataFrame()
+    epochs: range = range(1, len(history.history["loss"]) + 1)
+    history_df: pd.DataFrame = pd.DataFrame()
     history_df["loss"] = history.history["loss"]
     history_df["val_loss"] = history.history["val_loss"]
     history_df["epochs"] = epochs
@@ -261,8 +261,8 @@ def _create_wandb_predictions_table(
     Constructs a graph of a given models predictions on an X_set and y_set
     and logs it to the W&B backend.
     """
-    y_preds = model.predict(X_set).flatten()
-    pred_df = pd.DataFrame({"predictions": y_preds, "actuals": y_set})
+    y_preds: np.ndarray = model.predict(X_set).flatten()
+    pred_df: pd.DataFrame = pd.DataFrame({"predictions": y_preds, "actuals": y_set})
     table = wandb.Table(dataframe=pred_df[-100:])
 
     run.log({f"{title}": table})
@@ -298,13 +298,13 @@ def train_nn_model(
         logger.info("Training on CPU...")
 
     # Define a model checkpoint to save our best models to
-    cp = ModelCheckpoint(
+    cp: ModelCheckpoint = ModelCheckpoint(
         str(MODELS_DIR / f"{product_id}_{model_name}_model/"), save_best_only=True
     )
 
     # Train the neural network model
     logger.info(f"Fitting {model_name} model on {product_id} training data ... 👕\n")
-    history = nn_model.fit(
+    history: tf.keras.callbacks.History = nn_model.fit(
         X_train,
         y_train,
         batch_size=batch_size,
@@ -314,12 +314,14 @@ def train_nn_model(
     )
 
     # load the best model from our checkpoint
-    best_model = load_model(str(MODELS_DIR / f"{product_id}_{model_name}_model/"))
+    best_model: Sequential = load_model(
+        str(MODELS_DIR / f"{product_id}_{model_name}_model/")
+    )
 
     # Evaluate model and store its validation MAE and test MAE
     logger.info(f"Evaluating {product_id}_{model_name} model... 🔎")
-    val_mae = evaluate(best_model, X_val, y_val)
-    test_mae = evaluate(best_model, X_test, y_test)
+    val_mae: float = evaluate(best_model, X_val, y_val)
+    test_mae: float = evaluate(best_model, X_test, y_test)
     logger.info(f"Validation MAE: {val_mae} 🎯")
     logger.info(f"Test MAE: {test_mae} 🎯\n")
 
@@ -350,7 +352,7 @@ def train_nn_model(
     # Upload model to model registry
     if track:
         logger.info("Versioning model @ W&B backend ✨")
-        config: Dict = dict(
+        config: dict = dict(
             lr=learning_rate,
             epochs=epochs,
             batch_size=batch_size,
