@@ -2,7 +2,7 @@
 Inference pipeline for machine learning and deep learning models.
 """
 
-from typing import Dict, List, Callable
+from typing import Callable
 from pathlib import Path
 import requests
 from datetime import datetime, timedelta
@@ -41,7 +41,7 @@ def load_ml_model_from_name(model_name: str, product_id: str) -> Callable:
 
     # Load the model into memory
     with open(MODELS_DIR / f"{product_id}_{model_name}_model.pkl", mode="rb") as f:
-        ml_model = pickle.load(f)
+        ml_model: Callable = pickle.load(f)
     logger.info(f"{product_id}_{model_name} successfully loaded 🟢")
 
     return ml_model
@@ -60,7 +60,7 @@ def load_nn_model_from_name(model_name: str, product_id: str) -> Sequential:
     logger.info(f"Loading {product_id}_{model_name}_model ...")
 
     # Load the model into memory
-    nn_model = load_model(str(MODEL_PATH))
+    nn_model: Sequential = load_model(str(MODEL_PATH))
     logger.info(f"{model_name} successfully loaded 🟢")
 
     return nn_model
@@ -68,7 +68,7 @@ def load_nn_model_from_name(model_name: str, product_id: str) -> Sequential:
 
 def download_data_for_t_hours(
     product_id: str, date_time_hour: datetime, t: int = 26
-) -> List[List[int | float]]:
+) -> list[list[int | float]]:
     """
     Downloads raw OHLC candles for the specified cryptocurrency
     and date time hour + t hours into the past and returns them as a DataFrame.
@@ -78,10 +78,10 @@ def download_data_for_t_hours(
     start: str = str(int((date_time_hour - timedelta(hours=t)).timestamp()))
 
     # Call the Coinbase Exchange REST API for this product, datetime, and granularity
-    URL: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
-    URL += f"candles?start={start}&end={end}&granularity=3600"
-    r: requests.models.Response = requests.get(URL)
-    data: List[List[int | float]] = r.json()
+    url: str = f"https://api.exchange.coinbase.com/products/{product_id}/"
+    url += f"candles?start={start}&end={end}&granularity=3600"
+    r: requests.models.Response = requests.get(url)
+    data: list[list[int | float]] = r.json()
 
     return data
 
@@ -93,7 +93,7 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     SCALER_PATH: Path = MODELS_DIR / f"{product_id}_X_scaler_model.pkl"
 
     # Extract column order to maintain it after scaling
-    column_order: List[str] = list(X.columns)
+    column_order: list[str] = list(X.columns)
 
     # Validate that the scaler model exists locally
     if not SCALER_PATH.exists():
@@ -110,7 +110,7 @@ def generate_scaled_features(X: pd.DataFrame, product_id: str) -> pd.DataFrame:
     logger.info("X successfully scaled 🟢\n")
 
     # Construct a DataFrame with the same columns as input
-    X = pd.DataFrame(X_scaled, columns=column_order)
+    X: pd.DataFrame = pd.DataFrame(X_scaled, columns=column_order)
 
     return X
 
@@ -127,7 +127,7 @@ def get_feature_row_for_prediction(
     """
 
     # Calculate hour (sin) and day (sin, cos) time features
-    time_signal_data = _get_time_signal_features(raw_ts_data)
+    time_signal_data: pd.DataFrame = _get_time_signal_features(raw_ts_data)
     # Convert seconds -> date time, sort by time, and drop duplicate time points
     time_signal_data["time"] = pd.to_datetime(time_signal_data["time"], unit="s")
     time_signal_data.sort_values(by=["time"], inplace=True)
@@ -135,34 +135,36 @@ def get_feature_row_for_prediction(
     time_signal_data.reset_index(drop=True, inplace=True)
 
     # Define a 1, 2, 3, ... -> 24 hour lag sequence for our x features
-    x_time_steps: List[int] = [
+    x_time_steps: list[int] = [
         i for i in reversed(range(1, window_seq_len + 1, step_size))
     ]
 
-    x_lag = Lag(x_time_steps)
+    x_lag: Lag = Lag(x_time_steps)
 
     # Create lagged columns for closing price
-    x_price = time_signal_data[["close"]].values
-    x_lagged_price = x_lag.fit_transform(x_price)
+    x_price: np.ndarray = time_signal_data[["close"]].values
+    x_lagged_price: np.ndarray = x_lag.fit_transform(x_price)
 
     # Create lagged columns for volume
-    x_volume = time_signal_data[["volume"]].values
-    x_lagged_volume = x_lag.fit_transform(x_volume)
+    x_volume: np.ndarray = time_signal_data[["volume"]].values
+    x_lagged_volume: np.ndarray = x_lag.fit_transform(x_volume)
 
     # Price lagged features DataFrame
-    price_features = pd.DataFrame(
+    price_features: pd.DataFrame = pd.DataFrame(
         x_lagged_price,
         columns=[f"price_{i}_hour_ago" for i in x_time_steps],
     )
 
     # Volume lagged features DataFrame
-    volume_features = pd.DataFrame(
+    volume_features: pd.DataFrame = pd.DataFrame(
         x_lagged_volume,
         columns=[f"volume_{i}_hour_ago" for i in x_time_steps],
     )
 
     # Full features DataFrame
-    features_df = pd.concat([price_features, volume_features, time_signal_data], axis=1)
+    features_df: pd.DataFrame = pd.concat(
+        [price_features, volume_features, time_signal_data], axis=1
+    )
 
     # Drop NaN values -> single prediction row
     features_df = features_df.dropna(axis=0)
@@ -173,10 +175,10 @@ def get_feature_row_for_prediction(
     # Feature engineering pipeline
     feature_engineering_pipeline = get_feature_engineering_pipeline()
     feature_engineering_pipeline.fit(features_df)
-    X = feature_engineering_pipeline.transform(features_df)
+    X: pd.DataFrame = feature_engineering_pipeline.transform(features_df)
 
     # Scale the full feature row
-    X: pd.DataFrame = generate_scaled_features(X, product_id)
+    X = generate_scaled_features(X, product_id)
 
     return X
 
@@ -190,25 +192,26 @@ def predict(
     Takes a feature row and model name and returns that model's prediction
     for the cryptocurrency's price point the next hour.
     """
-    MODEL_TYPE_MAPPINGS: Dict[str, str] = {"cnn": "nn", "lasso": "ml"}
+    MODEL_TYPE_MAPPINGS: dict[str, str] = {"cnn": "nn", "lasso": "ml"}
 
     model_type: str = MODEL_TYPE_MAPPINGS[model_name]
 
-    if model_type == "nn":
-        # Load neural network model into memory
-        model = load_nn_model_from_name(model_name, product_id)
+    match model_type:
+        case "nn":
+            # Load neural network model into memory
+            model = load_nn_model_from_name(model_name, product_id)
 
-        # Predict the next hour's price
-        price_next_hour: float = model.predict(feature_row).flatten()[0]
+            # Predict the next hour's price
+            price_next_hour: float = model.predict(feature_row).flatten()[0]
 
-    elif model_type == "ml":
-        # Load machine learning model into memory
-        model = load_ml_model_from_name(model_name, product_id)
+        case "ml":
+            # Load machine learning model into memory
+            model = load_ml_model_from_name(model_name, product_id)
 
-        # Predict the next hour's price
-        price_next_hour: float = model.predict(feature_row)[0]
+            # Predict the next hour's price
+            price_next_hour: float = model.predict(feature_row)[0]
 
-    else:
-        raise NotImplementedError("Model type is not implemented")
+        case _:
+            raise NotImplementedError("Model type is not implemented")
 
     return price_next_hour
